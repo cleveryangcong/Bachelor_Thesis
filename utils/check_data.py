@@ -1,3 +1,4 @@
+import numpy as np
 def check_dataset(data, mean, num, p_all=True):
     '''
     Method for checking whether created dataset is correct
