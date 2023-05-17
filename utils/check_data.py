@@ -5,7 +5,7 @@ def check_dataset(data, mean, num, p_all=True):
     
     input:
         param data: Raw Data with ensemble forecasts used to verify
-        param mean: The Data to be checked, mean already taken
+        param mean: The Data to be checked, mean already taken and only the mean
         param num: The number of datapoints to be checked
         param p_all: Print all, print only number of correct or all comparisons?
         
@@ -28,7 +28,6 @@ def check_dataset(data, mean, num, p_all=True):
                 phony_dim_1=0,
                 phony_dim_2=0,
                 phony_dim_3=0,
-                phony_dim_4=0,
             ).values,
             5,
         )
