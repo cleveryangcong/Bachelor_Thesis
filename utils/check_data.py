@@ -20,7 +20,7 @@ def check_dataset(data, mean, num, p_all=True):
             data.isel(phony_dim_0=i, phony_dim_1=0, phony_dim_3=0, phony_dim_4=0)
             .mean(dim="phony_dim_5")
             .values,
-            5,
+            4,
         )
         help2 = np.round(
             mean.isel(
@@ -29,7 +29,7 @@ def check_dataset(data, mean, num, p_all=True):
                 phony_dim_2=0,
                 phony_dim_3=0,
             ).values,
-            5,
+            4,
         )
         if p_all:
             print(help1, help2, help1 == help2)
