@@ -1,4 +1,17 @@
 def check_dataset(data, mean, num, p_all=True):
+    '''
+    Method for checking whether created dataset is correct
+    
+    input:
+        param data: Raw Data with ensemble forecasts used to verify
+        param mean: The Data to be checked, mean already taken
+        param num: The number of datapoints to be checked
+        param p_all: Print all, print only number of correct or all comparisons?
+        
+    output:
+        None
+    '''
+    
     count = 0
     for i in range(num):
 
