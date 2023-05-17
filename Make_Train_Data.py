@@ -40,7 +40,7 @@ dat_2022 = xr.open_dataset(
 
 # Define Variable Names
 dat_train_all = [dat_2018, dat_2019, dat_2020, dat_2021]
-var_names = ["t2m"]
+var_names = ["u10", "v10", "t2m", "t850", "z500"]
 
 # Calculate Mean and Std and create new file 
 for var in range(len(var_names)):
