@@ -5,7 +5,7 @@ def check_dataset(data, mean, num, p_all=True):
     
     input:
         param data: Raw Data with ensemble forecasts used to verify
-        param mean: The Data to be checked, mean already taken and only the mean
+        param mean: The Data to be checked
         param num: The number of datapoints to be checked
         param p_all: Print all, print only number of correct or all comparisons?
         
@@ -17,17 +17,18 @@ def check_dataset(data, mean, num, p_all=True):
     for i in range(num):
 
         help1 = np.round(
-            data.isel(phony_dim_0=i, phony_dim_1=0, phony_dim_3=0, phony_dim_4=0)
-            .mean(dim="phony_dim_5")
+            data.isel(forecast_date=i, lead_time=0, lat=0, lon=0)
+            .mean(dim="ens")
             .values,
             4,
         )
         help2 = np.round(
             mean.isel(
-                phony_dim_0=i,
-                phony_dim_1=0,
-                phony_dim_2=0,
-                phony_dim_3=0,
+                forecast_date=i,
+                lead_time=0,
+                lat=0,
+                lon=0,
+                mean_std = 0
             ).values,
             4,
         )
