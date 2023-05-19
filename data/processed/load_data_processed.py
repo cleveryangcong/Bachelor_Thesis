@@ -49,7 +49,7 @@ def load_data_u10_train_proc_norm():
 
 
 def load_data_v10_train_proc_norm():
-        '''
+    '''
     load v10 train data processed and normed
     '''
     dat_all = load_data_all_train_proc_norm()
@@ -57,7 +57,7 @@ def load_data_v10_train_proc_norm():
 
 
 def load_data_t2m_train_proc_norm():
-        '''
+    '''
     load t2m train data processed and normed
     '''
     dat_all = load_data_all_train_proc_norm()
@@ -65,7 +65,7 @@ def load_data_t2m_train_proc_norm():
 
 
 def load_data_t850_train_proc_norm():
-        '''
+    '''
     load t850 train data processed and normed
     '''
     dat_all = load_data_all_train_proc_norm()
@@ -73,8 +73,92 @@ def load_data_t850_train_proc_norm():
 
 
 def load_data_z500_train_proc_norm():
-        '''
+    '''
     load z500 train data processed and normed
     '''
     dat_all = load_data_all_train_proc_norm()
+    return dat_all[4]
+
+
+
+def load_data_all_test_proc_norm():
+    """
+    Load all variable test processed and normed data and format dimensions
+Args:
+    None
+Returns:
+    list: processsed dataset of test variables from 2018 - 2021 
+          order_var_names = ["u10", "v10", "t2m", "t850", "z500"]
+    
+    """
+    # Load all data
+    dat_test_u10 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/u10_test.h5")
+    dat_test_v10 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/v10_test.h5")
+    dat_test_t2m = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/t2m_test.h5")
+    dat_test_t850 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/t850_test.h5")
+    dat_test_z500 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/z500_test.h5")
+
+    dat_test_all = [
+        dat_test_u10,
+        dat_test_v10,
+        dat_test_t2m,
+        dat_test_t850,
+        dat_test_z500,
+    ]
+
+    var_dict = {
+        "phony_dim_0": "forecast_date",
+        "phony_dim_1": "lead_time",
+        "phony_dim_2": "lat",
+        "phony_dim_3": "lon",
+        "phony_dim_4": "mean_std",
+    }
+    var_names = ["u10", "v10", "t2m", "t850", "z500"]
+
+    dat_all = []
+
+    for i in range(len(dat_test_all)):
+        dat_test_all[i] = dat_test_all[i].rename_vars({var_names[i] + "test_truth": var_names[i] +"_test_truth"})
+        dat_all.append(dat_test_all[i].rename_dims(var_dict))
+
+    return dat_all
+
+
+def load_data_u10_test_proc_norm():
+    '''
+    load u10 test data processed and normed
+    '''
+    dat_all = load_data_all_test_proc_norm()
+    return dat_all[0]
+
+
+def load_data_v10_test_proc_norm():
+    '''
+    load v10 test data processed and normed
+    '''
+    dat_all = load_data_all_test_proc_norm()
+    return dat_all[1]
+
+
+def load_data_t2m_test_proc_norm():
+    '''
+    load t2m test data processed and normed
+    '''
+    dat_all = load_data_all_test_proc_norm()
+    return dat_all[2]
+
+
+def load_data_t850_test_proc_norm():
+    '''
+    load t850 test data processed and normed
+    '''
+    dat_all = load_data_all_test_proc_norm()
+    return dat_all[3]
+
+
+def load_data_z500_test_proc_norm():
+    '''
+    load z500 test data processed and normed
+    '''
+    dat_all = load_data_all_test_proc_norm()
     return dat_all[4]
