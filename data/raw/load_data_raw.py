@@ -43,7 +43,7 @@ Returns:
         dat_all.append(
             dat_train[i]
             .rename_dims(var_dict)
-            .transpose("forecast_date", "lead_time", "var", "lat", "lon", "ens")
+#             .transpose("forecast_date", "lead_time", "var", "lat", "lon", "ens") -> transposing makes the loading time increase by alot
     )
         
         
