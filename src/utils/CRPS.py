@@ -43,12 +43,12 @@ def crps_normal(mu, sigma, y):
     """
     Compute CRPS for a Gaussian distribution:
     Input: 
-        param mu: Array or pd.Series of ensemble means
-        param sigma: Array or pd.Series of ensemble stds
-        param y: Array or pd.Series ground truth values
+        param mu: Array or pd.Series or XArray of ensemble means
+        param sigma: Array or pd.Series or XArray  of ensemble stds
+        param y: Array or pd.Series or XArray  ground truth values
         
     Output:
-        crps: Continuous ranked probability score for a Gaussian dist
+        crps: Continuous ranked probability score for a Gaussian distribution
     """
     # Make sure sigma is positive
     sigma = np.abs(sigma)
