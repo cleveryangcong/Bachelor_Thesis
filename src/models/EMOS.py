@@ -1,4 +1,4 @@
-from CRPS import crps_cost_function
+from src.utils.CRPS import *
 
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Dense, Embedding, Flatten, Concatenate
