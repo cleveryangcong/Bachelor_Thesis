@@ -51,5 +51,16 @@ def main(batch_size = 5000, epochs = 5, lr = 0.1, validation_split = 0.2):
 
 # Check if the script is being run directly
 if __name__ == "__main__":
-    # Call the main function
-    main()
+    # Check if command-line arguments are provided
+    if len(sys.argv) > 1:
+        # Extract the arguments from command line
+        batch_size = int(sys.argv[1])
+        epochs = int(sys.argv[2])
+        lr = float(sys.argv[3])
+        validation_split = float(sys.argv[3])
+
+        # Call the main function with the provided arguments
+        main(batch_size = batch_size, epochs = epochs, lr = lr, validation_split = validation_split)
+    else:
+        # Call the main function with default values
+        main()
