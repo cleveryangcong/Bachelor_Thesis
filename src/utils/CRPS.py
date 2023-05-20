@@ -56,3 +56,24 @@ def crps_normal(mu, sigma, y):
     crps = sigma * (loc * (2 * norm.cdf(loc) - 1) + 2 * norm.pdf(loc) - 1. / np.sqrt(np.pi))
     
     return crps
+
+
+def crps_var_lead(X_test_lead_all, y_test_var_lead_all):
+    """
+    Calculate CRPS of dataset for all variables and all lead_times
+Args: 
+    X_test_lead_all (list): List of xarray dataArrays X-values for each variable
+    y_test_lead_all (list): List of xarray dataArrays y-values for each variable
+Returns:
+    nested_list: nested list with var-lead_time(5x31) with all crps values calculated.
+    """
+    crps_baseline_all = [[], [], [], [], []]
+    for var in tqdm(range(5)):
+        for lead_time in range(31):
+            crps_baseline = crps_normal(
+                mu=X_test_lead_all[var][lead_time].isel(mean_std=0).values,
+                sigma=X_test_lead_all[var][lead_time].isel(mean_std=1).values,
+                y=y_test_var_lead_all[var][lead_time].values,
+            )
+            crps_baseline_all[var].append(crps_baseline)
+    return crps_baseline_all
