@@ -1,7 +1,3 @@
-
-
-
-
 def split_var_lead(dat):
     """
     Data split into lead times and variables for all X values data
