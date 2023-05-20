@@ -1,9 +1,6 @@
 # Data
 import pickle
 
-# Helpful
-from tqdm import tqdm
-
 # My Methods
 from src.utils.CRPS import *
 from src.utils.data_split import *
