@@ -1,7 +1,11 @@
+# Basics
 import numpy as np
 import keras.backend as K
 import tensorflow as tf
+#Norms
 from scipy.stats import norm
+#Helpful
+from tqdm import tqdm
 
 
 def crps_cost_function(y_true, y_pred, theano=False):
