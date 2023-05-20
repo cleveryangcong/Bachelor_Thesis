@@ -44,7 +44,7 @@ Returns:
             verbose=1,
         )
             
-            EMOS_global_var_lead_preds[var].append(pred)
+            EMOS_global_var_lead_preds[var].append(preds)
     return EMOS_global_var_lead_preds
 
 def main():

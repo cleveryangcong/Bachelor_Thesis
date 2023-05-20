@@ -82,7 +82,7 @@ Returns:
             crps_baseline_all[var].append(crps_baseline)
     return crps_baseline_all
 
-def crps_var_lead_preds(X_test_lead_all, y_test_var_lead_all):
+def crps_var_lead_preds(Mean_std_predictions, y_test_var_lead_all):
     """
     Calculate CRPS of dataset for all variables and all lead_times
 Args: 
@@ -95,8 +95,8 @@ Returns:
     for var in range(5):
         for lead_time in range(31):
             crps_baseline = crps_normal(
-                mu=X_test_lead_all[var][lead_time][:, 0],
-                sigma=X_test_lead_all[var][lead_time][:, 1],
+                mu=Mean_std_predictions[var][lead_time][:, 0],
+                sigma=Mean_std_predictions[var][lead_time][:, 1],
                 y=y_test_var_lead_all[var][lead_time].values,
             )
             crps_baseline_all_preds[var].append(crps_baseline)
