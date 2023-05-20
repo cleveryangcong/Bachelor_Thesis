@@ -1,6 +1,6 @@
 def split_var_lead(dat):
     """
-    Data split into lead times and variables for all X values data
+    Data split into lead times and variables for all X values data, excludes first lead_time as it is aquivalent to forecast_date
 Args:
     dat(list): list of all 5 variables and their data including predictions and truth
     
