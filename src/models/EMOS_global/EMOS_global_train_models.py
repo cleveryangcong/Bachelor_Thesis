@@ -1,6 +1,7 @@
 # Helpful
 import time
 import datetime
+import sys
 
 # My Methods
 from src.utils.data_split import *
@@ -26,7 +27,6 @@ def main(batch_size = 5000, epochs = 5, lr = 0.1, validation_split = 0.2):
         for lead_time in range(31):
             start_time = time.time()
             num = num + 1
-            print('Iteration: ' + num)
             EMOS_glob = build_EMOS_network_keras(compile=True, lr = lr)
             EMOS_glob.fit(
                 [
