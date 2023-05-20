@@ -81,3 +81,23 @@ Returns:
             )
             crps_baseline_all[var].append(crps_baseline)
     return crps_baseline_all
+
+def crps_var_lead_preds(X_test_lead_all, y_test_var_lead_all):
+    """
+    Calculate CRPS of dataset for all variables and all lead_times
+Args: 
+    X_test_lead_all (list): List of xarray dataArrays X-values for each variable
+    y_test_lead_all (list): List of xarray dataArrays y-values for each variable
+Returns:
+    nested_list: nested list with var-lead_time(5x31) with all crps values calculated.
+    """
+    crps_baseline_all_preds = [[], [], [], [], []]
+    for var in range(5):
+        for lead_time in range(31):
+            crps_baseline = crps_normal(
+                mu=X_test_lead_all[var][lead_time][:, 0],
+                sigma=X_test_lead_all[var][lead_time][:, 1],
+                y=y_test_var_lead_all[var][lead_time].values,
+            )
+            crps_baseline_all_preds[var].append(crps_baseline)
+    return crps_baseline_all_preds
