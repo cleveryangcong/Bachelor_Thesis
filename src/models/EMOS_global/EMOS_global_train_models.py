@@ -38,7 +38,7 @@ def main(batch_size = 5000, epochs = 5, lr = 0.1, validation_split = 0.2):
                 epochs=epochs,
                 validation_split=validation_split,
             )
-            EMOS_glob.save('/home/dchen/BA_CH_EN/models/EMOS_global_models/EMOS_glob_' + var_names[var] + '_' + str(lead_time) + '.h5')
+            EMOS_glob.save('/home/dchen/BA_CH_EN/models/EMOS_global_models/EMOS_glob_' + var_names[var] + '_lead_time_' + str(lead_time) + '.h5')
             
             # Printing out time
             end_time = time.time()
@@ -47,6 +47,7 @@ def main(batch_size = 5000, epochs = 5, lr = 0.1, validation_split = 0.2):
             minutes = int((time_difference % 3600) // 60)
             seconds = int(time_difference % 60)
             formatted_time = f" Round {num} finished in:{hours} hours, {minutes} minutes, {seconds} seconds"
+            print(formatted_time)
             
 
 # Check if the script is being run directly
