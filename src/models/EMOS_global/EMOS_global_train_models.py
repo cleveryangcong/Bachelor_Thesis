@@ -10,6 +10,16 @@ import data.processed.load_data_processed as ldp
 
 
 def main(batch_size = 5000, epochs = 5, lr = 0.1, validation_split = 0.2):
+    '''
+    Train 5 * 31 models globally, one for each variable and lead_time
+Args:
+    batch_size (int): batch_size used for model training
+    epochs (int): epochs used for model training
+    lr(float): learning rate used for model training
+    validation_split(float): validation_split used for model training
+Returns:
+    None:
+    '''
     # Basics
     var_names = ["u10", "v10", "t2m", "t850", "z500"]
     
