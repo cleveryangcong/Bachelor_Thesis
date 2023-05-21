@@ -7,13 +7,14 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.callbacks import EarlyStopping
 
 
-def build_EMOS_network_keras(compile=False, optimizer='SGD', lr=0.1):
+def build_EMOS_network_keras(compile=False, optimizer='SGD', lr=0.1, loss = crps_cost_function):
     """Build (and maybe compile) EMOS network in keras.
 
     Args:
         compile: If true, compile model
         optimizer: String of keras optimizer
         lr: learning rate
+        loss: loss function to be optimized: either crps_cost_function(normal dist) or crps(for positive values)
 
     Returns:
         model: Keras model
@@ -27,5 +28,5 @@ def build_EMOS_network_keras(compile=False, optimizer='SGD', lr=0.1):
 
     if compile:
         opt = tf.keras.optimizers.__dict__[optimizer](learning_rate = lr)
-        model.compile(optimizer=opt, loss=crps_cost_function)
+        model.compile(optimizer=opt, loss=loss)
     return model

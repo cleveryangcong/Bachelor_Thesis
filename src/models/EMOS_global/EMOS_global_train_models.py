@@ -5,6 +5,7 @@ import sys
 
 # My Methods
 from src.utils.data_split import *
+from src.utils.CRPS import *
 from src.models.EMOS import *
 import data.processed.load_data_processed as ldp
 
@@ -36,9 +37,13 @@ Returns:
     for var in range(5):
         start_time = time.time()
         for lead_time in range(31):
-
+            # CRPS distribution should be dependent on variable
+            if var in [0,1,4]:
+                loss = crps_cost_function_trunc
+            else:
+                loss = crps_cost_function
             num = num + 1
-            EMOS_glob = build_EMOS_network_keras(compile=True, lr = lr)
+            EMOS_glob = build_EMOS_network_keras(compile=True, lr = lr, loss = loss)
             EMOS_glob.fit(
                 [
                     X_train_var_lead_all[var][lead_time].isel(mean_std=0).values.flatten(),
