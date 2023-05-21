@@ -95,8 +95,8 @@ Returns:
     for var in range(5):
         for lead_time in range(31):
             crps_baseline = crps_normal(
-                mu=Mean_std_predictions[var][lead_time][:, 0],
-                sigma=Mean_std_predictions[var][lead_time][:, 1],
+                mu=Mean_std_predictions[var][lead_time][:, 0].flatten(),
+                sigma=Mean_std_predictions[var][lead_time][:, 1].flatten(),
                 y=y_test_var_lead_all[var][lead_time].values,
             )
             crps_baseline_all_preds[var].append(crps_baseline)
