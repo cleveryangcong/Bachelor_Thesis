@@ -7,6 +7,7 @@ import pickle
 # Helpful
 from tqdm import tqdm
 import os
+import time
 
 # My Methods
 import importlib
@@ -26,6 +27,7 @@ Returns:
     nested_list: 5x31, predictions on test dataset based on models trained for each variable and lead_time
     
     '''
+    start_time = time.time()
     # 1. Load dataset
     dat_test_proc = ldp.load_data_all_test_proc_norm()
     # 2. Split dataset
@@ -34,6 +36,7 @@ Returns:
     EMOS_global_var_lead_models = EMOS_global_load_models()
     # 4. Predict based on trained models
     EMOS_global_var_lead_preds = [[],[],[],[],[]]
+    num = 0
     for var in range(5):
         for lead_time in range(31):
             preds = EMOS_global_var_lead_models[var][lead_time].predict(
@@ -45,6 +48,15 @@ Returns:
         )
             
             EMOS_global_var_lead_preds[var].append(preds)
+            half_time = time.time()
+            time_difference_half = half_time - start_time
+            hours = int(time_difference_half // 3600)
+            minutes = int((time_difference_half % 3600) // 60)
+            seconds = int(time_difference_half % 60)
+            formatted_time_half = f" Round {num} finished after:{hours} hours, {minutes} minutes, {seconds} seconds"
+            num = num + 1
+            print(f"{formatted_time_half}")
+            
     return EMOS_global_var_lead_preds
 
 def main():
@@ -57,8 +69,9 @@ def main():
     X_test_lead_all, y_test_var_lead_all = split_var_lead(dat_test_proc)
     # 3. Get predictions
     EMOS_global_var_lead_preds = EMOS_global_predict()
-    # 4. Calculate all mean scores
+    # 4. Calculate all CRPS scores
     EMOS_global_scores = crps_var_lead_preds(EMOS_global_var_lead_preds, y_test_var_lead_all)
+    # 5. Calculate all CRPS mean scores
     EMOS_global_mean_score = [[], [], [], [], []]
     for var in range(5):
         for lead_time in range(31):
