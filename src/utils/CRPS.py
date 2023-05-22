@@ -88,11 +88,26 @@ def crps_cost_function_trunc(y_true, y_pred, theano=False):
 
 
 def crps_trunc(mu, sigma, y):
+    '''
+        Compute CRPS for a truncated Gaussian distribution:
+    Input: 
+        param mu: Array or pd.Series or XArray of ensemble means
+        param sigma: Array or pd.Series or XArray  of ensemble stds
+        param y: Array or pd.Series or XArray  ground truth values
+        
+    Output:
+        crps: Continuous ranked probability score for a Gaussian distribution
+    
+    '''
+    y_pred = np.stack((mu, sigma), axis=1)
     y_true = y
 
+    mu = K.abs(y_pred[:, 0])
+    sigma = K.abs(y_pred[:, 1])
+        
     var = K.square(sigma)
     loc = (y_true - mu) / K.sqrt(var)
-
+    
     phi = 1.0 / np.sqrt(2.0 * np.pi) * K.exp(-K.square(loc) / 2.0)
     
     Phi_ms = 0.5 * (1.0 + tf.math.erf(mu/sigma / np.sqrt(2.0)))
@@ -103,7 +118,7 @@ def crps_trunc(mu, sigma, y):
             loc * Phi_ms * (2.0 * Phi + Phi_ms - 2.0)
             + 2.0 * phi * Phi_ms - 1.0 / np.sqrt(np.pi) * Phi_2ms
         )
-    return K.mean(crps)
+    return crps
 
 def crps_var_lead(X_test_lead_all, y_test_var_lead_all):
     """
