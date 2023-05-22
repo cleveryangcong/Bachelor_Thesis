@@ -62,11 +62,48 @@ def crps_normal(mu, sigma, y):
     return crps
 
 def crps_cost_function_trunc(y_true, y_pred, theano=False):
-    pass
+    '''
+    Crps cost function truncated for normal distributions
+    '''
+    mu = K.abs(y_pred[:, 0])
+    sigma = K.abs(y_pred[:, 1])
+    
+    if not theano:
+        y_true = y_true[:, 0]   # Need to also get rid of axis 1 to match!
+        
+    var = K.square(sigma)
+    loc = (y_true - mu) / K.sqrt(var)
+    
+    phi = 1.0 / np.sqrt(2.0 * np.pi) * K.exp(-K.square(loc) / 2.0)
+    
+    Phi_ms = 0.5 * (1.0 + tf.math.erf(mu/sigma / np.sqrt(2.0)))
+    Phi = 0.5 * (1.0 + tf.math.erf(loc / np.sqrt(2.0)))
+    Phi_2ms = 0.5 * (1.0 + tf.math.erf(np.sqrt(2)*mu/sigma / np.sqrt(2.0)))
+    
+    crps = K.sqrt(var) / K.square( Phi_ms ) * (
+            loc * Phi_ms * (2.0 * Phi + Phi_ms - 2.0)
+            + 2.0 * phi * Phi_ms - 1.0 / np.sqrt(np.pi) * Phi_2ms
+        )
+    return K.mean(crps)
+
 
 def crps_trunc(mu, sigma, y):
-    pass
+    y_true = y
 
+    var = K.square(sigma)
+    loc = (y_true - mu) / K.sqrt(var)
+
+    phi = 1.0 / np.sqrt(2.0 * np.pi) * K.exp(-K.square(loc) / 2.0)
+    
+    Phi_ms = 0.5 * (1.0 + tf.math.erf(mu/sigma / np.sqrt(2.0)))
+    Phi = 0.5 * (1.0 + tf.math.erf(loc / np.sqrt(2.0)))
+    Phi_2ms = 0.5 * (1.0 + tf.math.erf(np.sqrt(2)*mu/sigma / np.sqrt(2.0)))
+    
+    crps = K.sqrt(var) / K.square( Phi_ms ) * (
+            loc * Phi_ms * (2.0 * Phi + Phi_ms - 2.0)
+            + 2.0 * phi * Phi_ms - 1.0 / np.sqrt(np.pi) * Phi_2ms
+        )
+    return K.mean(crps)
 
 def crps_var_lead(X_test_lead_all, y_test_var_lead_all):
     """
