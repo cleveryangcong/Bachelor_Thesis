@@ -54,7 +54,7 @@ Returns:
                 epochs=epochs,
                 validation_split=validation_split,
             )
-            EMOS_glob.save('/home/dchen/BA_CH_EN/models/EMOS_global_models/EMOS_glob_' + var_names[var] + '_lead_time_' + str(lead_time) + '.h5')
+            EMOS_glob.save('/home/dchen/BA_CH_EN/models/EMOS_global_models/normed/EMOS_glob_' + var_names[var] + '_lead_time_' + str(lead_time) + '_normed.h5')
             
         # Printing out time
         end_time = time.time()
