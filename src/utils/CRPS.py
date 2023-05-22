@@ -52,7 +52,7 @@ def crps_normal(mu, sigma, y):
         param y: Array or pd.Series or XArray  ground truth values
         
     Output:
-        crps: Continuous ranked probability score for a Gaussian distribution
+        crps (numpy): Continuous ranked probability score for a Gaussian distribution
     """
     # Make sure sigma is positive
     sigma = np.abs(sigma)
@@ -96,7 +96,7 @@ def crps_trunc(mu, sigma, y):
         param y: Array or pd.Series or XArray  ground truth values
         
     Output:
-        crps: Continuous ranked probability score for a Gaussian distribution
+        crps(numpy): Continuous ranked probability score for a Gaussian distribution
     
     '''
     y_pred = np.stack((mu, sigma), axis=1)
@@ -118,11 +118,11 @@ def crps_trunc(mu, sigma, y):
             loc * Phi_ms * (2.0 * Phi + Phi_ms - 2.0)
             + 2.0 * phi * Phi_ms - 1.0 / np.sqrt(np.pi) * Phi_2ms
         )
-    return crps
+    return crps.numpy()
 
 def crps_var_lead(X_test_lead_all, y_test_var_lead_all):
     """
-    Calculate CRPS of dataset for all variables and all lead_times
+    Calculate CRPS Baseline score of dataset for all variables and all lead_times
 Args: 
     X_test_lead_all (list): List of xarray dataArrays X-values for each variable
     y_test_lead_all (list): List of xarray dataArrays y-values for each variable
@@ -145,7 +145,7 @@ Returns:
                 sigma=X_test_lead_all[var][lead_time].isel(mean_std=1).values,
                 y=y_test_var_lead_all[var][lead_time].values,
             )
-            s
+            
             crps_baseline_all[var].append(crps_baseline)
     return crps_baseline_all
 
