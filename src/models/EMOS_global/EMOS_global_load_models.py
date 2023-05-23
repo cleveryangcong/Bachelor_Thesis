@@ -20,10 +20,10 @@ Returns:
     EMOS_global_var_lead_models = [[], [], [], [], []]
     for var in range(5):
         for lead_time in range(31):
-            if var in [0,1,4]:
+            if var in [4]:
                 loss_dict = {'crps_cost_function_trunc': crps_cost_function_trunc}
             else:
-                loss_dict = {'crps_cost_function': crps_cost_function_trunc}
+                loss_dict = {'crps_cost_function': crps_cost_function}
             EMOS_global_var_lead_models[var].append(
                 tf.keras.models.load_model(
                     "/home/dchen/BA_CH_EN/models/EMOS_global_models/normed/EMOS_glob_"

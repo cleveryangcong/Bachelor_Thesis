@@ -133,7 +133,7 @@ Returns:
     for var in tqdm(range(5)):
         for lead_time in range(31):
             # CRPS distribution should be dependent on variable
-            if var in [0,1,4]:
+            if var in [4]:
                 crps_baseline = crps_trunc(
                 mu=X_test_lead_all[var][lead_time].isel(mean_std=0).values,
                 sigma=X_test_lead_all[var][lead_time].isel(mean_std=1).values,
@@ -161,7 +161,7 @@ Returns:
     crps_baseline_all_preds = [[], [], [], [], []]
     for var in range(5):
         for lead_time in range(31):
-            if var in [0,1,4]:
+            if var in [4]:
                 crps_baseline = crps_trunc(
                     mu=Mean_std_predictions[var][lead_time][:, 0].flatten(),
                     sigma=Mean_std_predictions[var][lead_time][:, 1].flatten(),

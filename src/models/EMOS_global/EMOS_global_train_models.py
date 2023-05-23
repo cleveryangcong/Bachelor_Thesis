@@ -38,7 +38,7 @@ Returns:
         start_time = time.time()
         for lead_time in range(31):
             # CRPS distribution should be dependent on variable
-            if var in [0,1,4]:
+            if var in [4]:
                 loss = crps_cost_function_trunc
             else:
                 loss = crps_cost_function
