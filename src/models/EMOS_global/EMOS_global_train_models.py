@@ -10,7 +10,7 @@ from src.models.EMOS import *
 import data.processed.load_data_processed as ldp
 
 
-def main(batch_size = 5000, epochs = 5, lr = 0.1, validation_split = 0.2):
+def main(batch_size = 4096, epochs = 5, lr = 0.1, validation_split = 0.2):
     '''
     Train 5 * 31 models globally, one for each variable and lead_time
 Args:
