@@ -65,37 +65,21 @@ if __name__ == "__main__":
     dat_train_proc_norm = ldp.load_data_all_train_proc_norm()
     dat_test_proc_norm = ldp.load_data_all_test_proc_norm()
     var_names = ["u10", "v10", "t2m", "t850", "z500"]
-    
+    means = np.load("/mnt/sda/Data2/fourcastnet/data/stats_v0/global_means.npy").flatten()[[0, 1, 2, 5, 14]]
+    stds = np.load("/mnt/sda/Data2/fourcastnet/data/stats_v0/global_stds.npy").flatten()[[0, 1, 2, 5, 14]]
     # Create a pool of worker processes
-    pool = mp.Pool(10)
+    pool = mp.Pool(11)
     
     # main(), make denormed datasets
     for var in range(5):
         name = var_names[var] + "_train_denorm"
-        pool.apply_async(main(), args = (means[var], stds[var], dat_train_proc_norm[var], name))
-        
-        
-        half_time = time.time()
-        time_difference_half = half_time - start_time
-        hours = int(time_difference_half // 3600)
-        minutes = int((time_difference_half % 3600) // 60)
-        seconds = int(time_difference_half % 60)
-        formatted_time_half = f" Round train{var} finished concatenation in:{hours} hours, {minutes} minutes, {seconds} seconds"
-        print(f"{formatted_time_half}")
+        pool.apply_async(main, args=(means[var], stds[var], dat_train_proc_norm[var], name))
+
         
         
     for var in range(5):
         name = var_names[var] + "_test_denorm"
-        pool.apply_async(main(), args = (means[var], stds[var], dat_test_proc_norm[var], name))
-        
-        
-        half_time = time.time()
-        time_difference_half = half_time - start_time
-        hours = int(time_difference_half // 3600)
-        minutes = int((time_difference_half % 3600) // 60)
-        seconds = int(time_difference_half % 60)
-        formatted_time_half = f" Round test{var} finished concatenation in:{hours} hours, {minutes} minutes, {seconds} seconds"
-        print(f"{formatted_time_half}")
+        pool.apply_async(main, args = (means[var], stds[var], dat_test_proc_norm[var], name))
         
         
     pool.close()
