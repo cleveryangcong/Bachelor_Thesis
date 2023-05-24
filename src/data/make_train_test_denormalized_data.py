@@ -52,8 +52,9 @@ Returns:
     denormalized_train = denormalized_train.transpose(
         "forecast_date", "lead_time", "lat", "lon", "mean_std"
     )
+    
     denormalized_dataset = xr.Dataset(
-        data_vars={"u10_train": denormalized_train, "u10_truth": denormalized_truth,}
+        data_vars={list(dataset.data_vars.keys())[0]: denormalized_train, list(dataset.data_vars.keys())[1]: denormalized_truth,}
     )
     denormalized_dataset.to_netcdf(
         "/Data/Delong_BA_Data/mean_ens_std_denorm/" + name + ".h5", format="NETCDF4"
@@ -73,7 +74,7 @@ if __name__ == "__main__":
     # main(), make denormed datasets
     for var in range(5):
         name = var_names[var] + "_train_denorm"
-        pool.apply_async(main, args=(means[var], stds[var], dat_train_proc_norm[var], name))
+        pool.apply_async(main, args=(means[var], stds[var], dat_train_proc_norm[var]))
 
         
         
