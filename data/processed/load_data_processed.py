@@ -1,21 +1,20 @@
 import xarray as xr
 
-def load_data_all_train_proc_norm():
+def load_data_all_train_proc_norm(chunks=None):
     """
     Load all variable train processed and normed data and format dimensions
-Args:
-    None
-Returns:
-    list: processsed dataset of train variables from 2018 - 2021 
-          order_var_names = ["u10", "v10", "t2m", "t850", "z500"]
-    
+    Args:
+        chunks (dict): Chunk sizes to use for the Dask arrays.
+    Returns:
+        list: processsed dataset of train variables from 2018 - 2021 
+              order_var_names = ["u10", "v10", "t2m", "t850", "z500"]
     """
-    # Load all data
-    dat_train_u10 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/u10_train.h5")
-    dat_train_v10 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/v10_train.h5")
-    dat_train_t2m = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/t2m_train.h5")
-    dat_train_t850 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/t850_train.h5")
-    dat_train_z500 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/z500_train.h5")
+    # Load all data with chunks
+    dat_train_u10 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/u10_train.h5", chunks=chunks)
+    dat_train_v10 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/v10_train.h5", chunks=chunks)
+    dat_train_t2m = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/t2m_train.h5", chunks=chunks)
+    dat_train_t850 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/t850_train.h5", chunks=chunks)
+    dat_train_z500 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/z500_train.h5", chunks=chunks)
 
     dat_train_all = [
         dat_train_u10,
@@ -39,6 +38,7 @@ Returns:
         dat_all.append(dat_train_all[i].rename_dims(var_dict))
 
     return dat_all
+
 
 def load_data_u10_train_proc_norm():
     '''
@@ -81,22 +81,21 @@ def load_data_z500_train_proc_norm():
 
 
 
-def load_data_all_test_proc_norm():
+def load_data_all_test_proc_norm(chunks=None):
     """
     Load all variable test processed and normed data and format dimensions
-Args:
-    None
-Returns:
-    list: processsed dataset of test variables from 2018 - 2021 
-          order_var_names = ["u10", "v10", "t2m", "t850", "z500"]
-    
+    Args:
+        chunks (dict): Chunk sizes to use for the Dask arrays.
+    Returns:
+        list: processsed dataset of test variables from 2018 - 2021 
+              order_var_names = ["u10", "v10", "t2m", "t850", "z500"]
     """
-    # Load all data
-    dat_test_u10 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/u10_test.h5")
-    dat_test_v10 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/v10_test.h5")
-    dat_test_t2m = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/t2m_test.h5")
-    dat_test_t850 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/t850_test.h5")
-    dat_test_z500 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/z500_test.h5")
+    # Load all data with chunks
+    dat_test_u10 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/u10_test.h5", chunks=chunks)
+    dat_test_v10 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/v10_test.h5", chunks=chunks)
+    dat_test_t2m = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/t2m_test.h5", chunks=chunks)
+    dat_test_t850 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/t850_test.h5", chunks=chunks)
+    dat_test_z500 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/z500_test.h5", chunks=chunks)
 
     dat_test_all = [
         dat_test_u10,

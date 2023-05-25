@@ -1,8 +1,8 @@
-# Data
 import xarray as xr
+import numpy as np
+import multiprocessing as mp
+import time
 
-# My Methods
-import importlib
 from src.utils.CRPS import *
 from src.utils.data_split import *
 from src.models.EMOS import *
@@ -24,13 +24,13 @@ def denormalize_std(std, x):
 def main(mean, std, dataset, name):
     """
     Denormalize a Dataset and save it at data directory
-Args:
-    mean (float): mean value to denormalize with
-    std (float): standard deviation used to denormalize with
-    dataset(dataset): xarray dataset with var_train and var_truth dataArrays
-    name (String): name to be given to dataset
-Returns:
-    None
+    Args:
+        mean (float): mean value to denormalize with
+        std (float): standard deviation used to denormalize with
+        dataset(dataset): xarray dataset with var_train and var_truth dataArrays
+        name (String): name to be given to dataset
+    Returns:
+        None
     """
     denormalized_mean = xr.apply_ufunc(
         denormalize,
@@ -60,12 +60,13 @@ Returns:
         "/Data/Delong_BA_Data/mean_ens_std_denorm/" + name + ".h5", format="NETCDF4"
     )
     
+
 if __name__ == "__main__":
     start_time = time.time()
-    # Load data
-    dat_train_proc_norm = ldp.load_data_all_train_proc_norm()
-    dat_test_proc_norm = ldp.load_data_all_test_proc_norm()
-    var_names = ["u10", "v10", "t2m", "t850", "z500"]
+    # Load data with chunks
+    dat_train_proc_norm = ldp.load_data_all_train_proc_norm(chunks={"forecast_date": 10})
+    dat_test_proc_norm = ldp.load_data_all_test_proc_norm(chunks={"forecast_date": 10})
+    var_names = ["u10", "v10", "t2m", "t850", "z500"]S
     means = np.load("/mnt/sda/Data2/fourcastnet/data/stats_v0/global_means.npy").flatten()[[0, 1, 2, 5, 14]]
     stds = np.load("/mnt/sda/Data2/fourcastnet/data/stats_v0/global_stds.npy").flatten()[[0, 1, 2, 5, 14]]
     # Create a pool of worker processes
@@ -74,8 +75,7 @@ if __name__ == "__main__":
     # main(), make denormed datasets
     for var in range(5):
         name = var_names[var] + "_train_denorm"
-        pool.apply_async(main, args=(means[var], stds[var], dat_train_proc_norm[var]))
-
+        pool.apply_async(main, args=(means[var], stds[var], dat_train_proc_norm[var], name))
         
         
     for var in range(5):
@@ -85,7 +85,8 @@ if __name__ == "__main__":
         
     pool.close()
     pool.join()
-    
+
+   
     
     
     
