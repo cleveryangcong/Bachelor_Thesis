@@ -7,7 +7,7 @@ def load_data_all_train_proc_norm(chunks=None):
         chunks (dict): Chunk sizes to use for the Dask arrays.
     Returns:
         list: processsed dataset of train variables from 2018 - 2021 
-              order_var_names = ["u10", "v10", "t2m", "t850", "z500"]
+              order_var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
     """
     # Load all data with chunks
     dat_train_u10 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/u10_train.h5", chunks=chunks)
@@ -15,13 +15,15 @@ def load_data_all_train_proc_norm(chunks=None):
     dat_train_t2m = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/t2m_train.h5", chunks=chunks)
     dat_train_t850 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/t850_train.h5", chunks=chunks)
     dat_train_z500 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/z500_train.h5", chunks=chunks)
-
+    dat_train_ws10 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/ws10_train.h5", chunks=chunks)
+    
     dat_train_all = [
         dat_train_u10,
         dat_train_v10,
         dat_train_t2m,
         dat_train_t850,
         dat_train_z500,
+        dat_train_ws10
     ]
 
     var_dict = {
@@ -79,6 +81,13 @@ def load_data_z500_train_proc_norm():
     dat_all = load_data_all_train_proc_norm()
     return dat_all[4]
 
+def load_data_ws10_train_proc_norm():
+    '''
+    load ws10 train data processed and normed
+    '''
+    dat_all = load_data_all_train_proc_norm()
+    return dat_all[5]
+
 
 
 def load_data_all_test_proc_norm(chunks=None):
@@ -88,7 +97,7 @@ def load_data_all_test_proc_norm(chunks=None):
         chunks (dict): Chunk sizes to use for the Dask arrays.
     Returns:
         list: processsed dataset of test variables from 2018 - 2021 
-              order_var_names = ["u10", "v10", "t2m", "t850", "z500"]
+              order_var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
     """
     # Load all data with chunks
     dat_test_u10 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/u10_test.h5", chunks=chunks)
@@ -96,6 +105,7 @@ def load_data_all_test_proc_norm(chunks=None):
     dat_test_t2m = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/t2m_test.h5", chunks=chunks)
     dat_test_t850 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/t850_test.h5", chunks=chunks)
     dat_test_z500 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/z500_test.h5", chunks=chunks)
+    dat_test_ws10 = xr.open_dataset("/Data/Delong_BA_Data/Mean_ens_std/ws10_test.h5", chunks=chunks)
 
     dat_test_all = [
         dat_test_u10,
@@ -103,6 +113,7 @@ def load_data_all_test_proc_norm(chunks=None):
         dat_test_t2m,
         dat_test_t850,
         dat_test_z500,
+        dat_test_ws10
     ]
 
     var_dict = {
@@ -161,3 +172,10 @@ def load_data_z500_test_proc_norm():
     '''
     dat_all = load_data_all_test_proc_norm()
     return dat_all[4]
+
+def load_data_ws10_test_proc_norm():
+    '''
+    load ws10 test data processed and normed
+    '''
+    dat_all = load_data_all_test_proc_norm()
+    return dat_all[5]
