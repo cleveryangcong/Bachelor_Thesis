@@ -39,6 +39,31 @@ def main():
         "/mnt/sda/Data2/fourcastnet/data/stats_v0/global_stds.npy"
     ).flatten()[[0, 1, 2, 5, 14]]
 
+    # Calculate total number of days for all years
+    total_days = sum(ldr.load_data_raw()[year].predictions.shape[0] for year in range(4))
+
+    # Create datasets with total_days
+    if name_train in f:
+        del f[name_train]
+    if name_truth in f:
+        del f[name_truth]
+
+    train = f.create_dataset(
+        name_train,
+        shape=(total_days, 32, 120, 130, 2),
+        dtype=np.float32,
+        compression="gzip",
+        compression_opts=9,
+    )
+    truth = f.create_dataset(
+        name_truth,
+        shape=(total_days, 32, 120, 130),
+        dtype=np.float32,
+        compression="gzip",
+        compression_opts=9,
+    )
+
+    start_day = 0
     # Load raw data for the years 2018-2021
     # process one year at a time
     for year in tqdm(range(4)):
@@ -47,28 +72,6 @@ def main():
 
         # Chunk the data using Dask
         dat_raw = dat_raw.chunk({"forecast_date": 1})
-
-        # The rest is largely the same
-
-        if name_train in f:
-            del f[name_train]  # delete the dataset if it already exists
-        if name_truth in f:
-            del f[name_truth]  # delete the dataset if it already exists
-
-        train = f.create_dataset(
-            name_train,
-            (n_days, 32, 120, 130, 2),
-            dtype=np.float32,
-            compression="gzip",
-            compression_opts=9,
-        )
-        truth = f.create_dataset(
-            name_truth,
-            (n_days, 32, 120, 130),
-            dtype=np.float32,
-            compression="gzip",
-            compression_opts=9,
-        )
 
         for forecast_date in tqdm(range(n_days)):
             # These computations will be performed lazily
@@ -104,8 +107,11 @@ def main():
             ws_train = ws_train.transpose("lead_time", "lat", "lon", "mean_std")
 
             # When writing to the file, we force computation with 'compute()'
-            train[forecast_date, ...] = ws_train.compute()
-            truth[forecast_date, ...] = ws10_tru.compute()
+            train[start_day + forecast_date, ...] = ws_train.compute()
+            truth[start_day + forecast_date, ...] = ws10_tru.compute()
+
+        # Update start_day for the next year
+        start_day += n_days
 
     # Close the h5 file
     f.close()
@@ -116,4 +122,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
