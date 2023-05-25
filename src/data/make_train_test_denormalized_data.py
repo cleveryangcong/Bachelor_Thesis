@@ -12,13 +12,27 @@ from src.models.EMOS_global.EMOS_global_load_models import *
 
 
 def denormalize(mean, std, x):
-    denormalized = (x * std) + mean
+    denormalized = xr.apply_ufunc(
+        lambda a, b, c: (c * b) + a,
+        mean,
+        std,
+        x,
+        dask="parallelized",
+        output_dtypes=[x.dtype],
+    )
     return denormalized
 
 
 def denormalize_std(std, x):
-    denormalized_std = x * std
+    denormalized_std = xr.apply_ufunc(
+        lambda a, b: b * a,
+        std,
+        x,
+        dask="parallelized",
+        output_dtypes=[x.dtype],
+    )
     return denormalized_std
+
 
 
 def main(mean, std, dataset, name):
@@ -32,34 +46,20 @@ def main(mean, std, dataset, name):
     Returns:
         None
     """
-    denormalized_mean = xr.apply_ufunc(
-        denormalize,
-        mean,
-        std,
-        dataset[list(dataset.data_vars.keys())[0]].isel(mean_std=0),
-    )
-    denormalized_std = xr.apply_ufunc(
-        denormalize_std,
-        std,
-        dataset[list(dataset.data_vars.keys())[0]].isel(mean_std=1),
-    )
-    denormalized_truth = xr.apply_ufunc(
-        denormalize, mean, std, dataset[list(dataset.data_vars.keys())[1]]
-    )
-    denormalized_train = xr.concat(
-        [denormalized_mean, denormalized_std], dim="mean_std"
-    )
-    denormalized_train = denormalized_train.transpose(
-        "forecast_date", "lead_time", "lat", "lon", "mean_std"
-    )
-    
+    denormalized_mean = denormalize(mean, std, dataset[list(dataset.data_vars.keys())[0]].isel(mean_std=0))
+
+    denormalized_std = denormalize_std(std, dataset[list(dataset.data_vars.keys())[0]].isel(mean_std=1))
+
+    denormalized_truth = denormalize(mean, std, dataset[list(dataset.data_vars.keys())[1]])
+
+    denormalized_train = xr.concat([denormalized_mean, denormalized_std], dim="mean_std")
+    denormalized_train = denormalized_train.transpose("forecast_date", "lead_time", "lat", "lon", "mean_std")
+
     denormalized_dataset = xr.Dataset(
         data_vars={list(dataset.data_vars.keys())[0]: denormalized_train, list(dataset.data_vars.keys())[1]: denormalized_truth,}
     )
-    denormalized_dataset.to_netcdf(
-        "/Data/Delong_BA_Data/mean_ens_std_denorm/" + name + ".h5", format="NETCDF4"
-    )
-    
+    denormalized_dataset.to_netcdf("/Data/Delong_BA_Data/mean_ens_std_denorm/" + name + ".h5", format="NETCDF4")
+
 
 if __name__ == "__main__":
     start_time = time.time()
@@ -71,20 +71,30 @@ if __name__ == "__main__":
     stds = np.load("/mnt/sda/Data2/fourcastnet/data/stats_v0/global_stds.npy").flatten()[[0, 1, 2, 5, 14]]
     # Create a pool of worker processes
     pool = mp.Pool(5)
+
+    # Store the results
+    results = []
     
     # main(), make denormed datasets
     for var in range(5):
         name = var_names[var] + "_train_denorm"
-        pool.apply_async(main, args=(means[var], stds[var], dat_train_proc_norm[var], name))
+        result = pool.apply_async(main, args=(means[var], stds[var], dat_train_proc_norm[var], name))
+        results.append(result)
         
         
     for var in range(5):
         name = var_names[var] + "_test_denorm"
-        pool.apply_async(main, args = (means[var], stds[var], dat_test_proc_norm[var], name))
-        
+        result = pool.apply_async(main, args = (means[var], stds[var], dat_test_proc_norm[var], name))
+        results.append(result)
         
     pool.close()
+    
+    # Call get() on each result to raise any exceptions
+    for result in results:
+        result.get()
+        
     pool.join()
+
 
    
     
