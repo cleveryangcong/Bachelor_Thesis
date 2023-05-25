@@ -123,14 +123,14 @@ def load_data_all_test_proc_norm(chunks=None):
         "phony_dim_3": "lon",
         "phony_dim_4": "mean_std",
     }
-    var_names = ["u10", "v10", "t2m", "t850", "z500"]
+    var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
 
     dat_all = []
 
-    for i in range(len(dat_test_all)):
+    for i in range(5):
         dat_test_all[i] = dat_test_all[i].rename_vars({var_names[i] + "test_truth": var_names[i] +"_test_truth"})
         dat_all.append(dat_test_all[i].rename_dims(var_dict))
-
+    dat_all.append(dat_test_all[5].rename_dims(var_dict))
     return dat_all
 
 
