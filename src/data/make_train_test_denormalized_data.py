@@ -64,13 +64,13 @@ def main(mean, std, dataset, name):
 if __name__ == "__main__":
     start_time = time.time()
     # Load data with chunks
-    dat_train_proc_norm = ldp.load_data_all_train_proc_norm(chunks={"forecast_date": 10})
-    dat_test_proc_norm = ldp.load_data_all_test_proc_norm(chunks={"forecast_date": 10})
-    var_names = ["u10", "v10", "t2m", "t850", "z500"]S
+    dat_train_proc_norm = ldp.load_data_five_train_proc_norm(chunks={"forecast_date": 10})
+    dat_test_proc_norm = ldp.load_data_five_test_proc_norm(chunks={"forecast_date": 10})
+    var_names = ["u10", "v10", "t2m", "t850", "z500"]
     means = np.load("/mnt/sda/Data2/fourcastnet/data/stats_v0/global_means.npy").flatten()[[0, 1, 2, 5, 14]]
     stds = np.load("/mnt/sda/Data2/fourcastnet/data/stats_v0/global_stds.npy").flatten()[[0, 1, 2, 5, 14]]
     # Create a pool of worker processes
-    pool = mp.Pool(11)
+    pool = mp.Pool(5)
     
     # main(), make denormed datasets
     for var in range(5):
