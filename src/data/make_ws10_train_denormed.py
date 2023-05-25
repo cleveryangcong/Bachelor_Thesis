@@ -9,6 +9,9 @@ import h5py
 # Helpful
 from tqdm import tqdm
 
+# Dask
+from dask.distributed import Client
+
 # My Methods
 import data.raw.load_data_raw as ldr
 
@@ -19,6 +22,8 @@ def denormalize(mean, std, x):
 
 
 def main():
+    # Start a Dask Client
+    client = Client()
 
     # Define path and file names for the h5 file to be created
     path = "/Data/Delong_BA_Data/mean_ens_std_denorm/ws10_train_denorm.h5"
@@ -40,8 +45,11 @@ def main():
         dat_raw = ldr.load_data_raw()[year]  # load data for the year
         n_days = dat_raw.predictions.shape[0]  # get number of days
 
-        # Create the datasets within the h5 file for 'train' and 'truth' data
-        # Create them once, before entering the forecast_date loop
+        # Chunk the data using Dask
+        dat_raw = dat_raw.chunk({"forecast_date": 1})
+
+        # The rest is largely the same
+
         if name_train in f:
             del f[name_train]  # delete the dataset if it already exists
         if name_truth in f:
@@ -49,21 +57,21 @@ def main():
 
         train = f.create_dataset(
             name_train,
-            (n_days, *dat_raw.predictions.isel(var=0, forecast_date=0).shape),
+            (n_days, 32, 120, 130, 2),
             dtype=np.float32,
             compression="gzip",
             compression_opts=9,
         )
         truth = f.create_dataset(
             name_truth,
-            (n_days, *dat_raw.ground_truth.isel(var=0, forecast_date=0).shape),
+            (n_days, 32, 120, 130),
             dtype=np.float32,
             compression="gzip",
             compression_opts=9,
         )
 
         for forecast_date in tqdm(range(n_days)):
-            # Compute the magnitude (absolute value) of wind speed predictions and truths
+            # These computations will be performed lazily
             u10_year_date_pred = denormalize(
                 means[0],
                 stds[0],
@@ -75,7 +83,7 @@ def main():
                 dat_raw.predictions.isel(var=1, forecast_date=forecast_date),
             )
             ws10_pred = np.hypot(u10_year_date_pred, v10_year_date_pred,)
-            
+
             u10_year_date_truth = denormalize(
                 means[0],
                 stds[0],
@@ -88,22 +96,24 @@ def main():
             )
 
             ws10_tru = np.hypot(u10_year_date_truth, v10_year_date_truth,)
-            
-            # Calculate mean and standard deviation of wind speed predictions
+
             ws10_pred_mean = ws10_pred.mean(dim="ens")
             ws10_pred_std = ws10_pred.std(dim="ens")
 
-            # Concatenate mean and standard deviation data along new 'mean_std' dimension
             ws_train = xr.concat([ws10_pred_mean, ws10_pred_std], dim="mean_std")
             ws_train = ws_train.transpose("lead_time", "lat", "lon", "mean_std")
 
-            # Populate the h5 file with the data
-            train[forecast_date, ...] = ws_train
-            truth[forecast_date, ...] = ws10_tru
+            # When writing to the file, we force computation with 'compute()'
+            train[forecast_date, ...] = ws_train.compute()
+            truth[forecast_date, ...] = ws10_tru.compute()
 
     # Close the h5 file
     f.close()
-    
-    
+
+    # Close the Dask client
+    client.close()
+
+
 if __name__ == "__main__":
     main()
+
