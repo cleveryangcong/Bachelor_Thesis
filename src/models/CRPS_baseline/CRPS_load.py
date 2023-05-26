@@ -1,7 +1,8 @@
 import os
 import numpy as np
+import fnmatch
 
-def crps_load_lead_lat_lon(, var_name):
+def crps_load_lead_lat_lon(var_name):
     '''
     Args:
         path (string): path to the directory that contains the numpy arrays
