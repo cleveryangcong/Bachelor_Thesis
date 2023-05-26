@@ -35,6 +35,14 @@ def load_data_all_train_proc_denorm(chunks=None):
 
     return dat_train_all
 
+def load_data_t2m_ws10_train_proc_denorm():
+    '''
+    load t2m and ws10 train data processed and normed
+    '''
+    dat_all = load_data_all_train_proc_denorm()
+    dat_all_important = [dat_all[2],dat_all[5]]
+    return dat_all_important
+
 def load_data_u10_train_proc_denorm():
     '''
     load u10 train data processed and denormed
@@ -116,6 +124,14 @@ def load_data_all_test_proc_denorm(chunks=None):
     ]
 
     return dat_test_all
+
+def load_data_t2m_ws10_test_proc_denorm():
+    '''
+    load t2m and ws10 train data processed and normed
+    '''
+    dat_all = load_data_all_test_proc_denorm()
+    dat_all_important = [dat_all[2],dat_all[5]]
+    return dat_all_important
 
 def load_data_u10_test_proc_denorm():
     '''
