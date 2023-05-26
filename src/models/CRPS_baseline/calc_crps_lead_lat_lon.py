@@ -10,7 +10,7 @@ from src.utils.data_split import *
 from src.models.EMOS import *
 import data.raw.load_data_raw as ldr
 import data.processed.load_data_processed as ldp
-import data.processed.load_data_processed_normed as ldpd
+import data.processed.load_data_processed_denormed as ldpd
 
 def main(var_num, truncated = False):
     '''
