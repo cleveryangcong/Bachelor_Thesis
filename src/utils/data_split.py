@@ -47,3 +47,15 @@ Returns:
                 dat[var][list(dat[var].data_vars.keys())[1]].isel(lead_time=lead)
             )
     return dat_X_lead_all, dat_y_lead_all
+
+
+def split_var_lead_one(dat):
+    """
+    Return 31 datasets one for each relevant lead_time
+    """
+    dat_split_X = []
+    dat_split_y = []
+    for lead_time in range(1, 32):
+        dat_split_X.append(dat[list(dat.data_vars.keys())[0]].isel(lead_time=lead_time))
+        dat_split_y.append(dat[list(dat.data_vars.keys())[1]].isel(lead_time=lead_time))
+    return dat_split_X, dat_split_y
