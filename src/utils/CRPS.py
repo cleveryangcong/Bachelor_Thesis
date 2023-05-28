@@ -153,7 +153,7 @@ def crps_var_lead_preds(Mean_std_predictions, y_test_var_lead_all):
     """
     Calculate CRPS of dataset for all variables and all lead_times
 Args: 
-    X_test_lead_all (list): List of xarray dataArrays X-values for each variable and lead_time
+    Mean_std_predictions (list): List of xarray dataArrays X-values for each variable and lead_time
     y_test_lead_all (list): List of xarray dataArrays y-values for each variable and lead_time
 Returns:
     nested_list: nested list with var-lead_time(5x31) with all crps values calculated.
