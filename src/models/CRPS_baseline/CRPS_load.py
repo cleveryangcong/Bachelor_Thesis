@@ -24,3 +24,16 @@ def crps_load_lead_lat_lon(var_name):
     arrays = [np.load(os.path.join(path, file)) for file in npy_files]
 
     return arrays
+
+def crps_load_lead_lat_lon_t2m():
+    '''
+    Function to load t2m crps scores
+    '''
+    return crps_load_lead_lat_lon('t2m')
+
+
+def crps_load_lead_lat_lon_ws10():
+    '''
+    Function to load ws10 crps scores
+    '''
+    return crps_load_lead_lat_lon('ws10')                                  
