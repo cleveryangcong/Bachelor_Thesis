@@ -164,7 +164,7 @@ def EMOS_global_predict_evaluate(EMOS_glob, var_num, lead_time):
     EMOS_glob_crps = EMOS_glob_crps.reshape(y_test_var_denormed.shape).mean(axis=0)
 
     # Save the average CRPS score over all days for 120 x 130 grid
-    model_filename = f"/Data/Delong_BA_Data/scores/EMOS_global_scores/EMOS_global_{var_names[var_num]}_lead_{lead_time}_scores.npy"
+    model_filename = f"/Data/Delong_BA_Data/scores/EMOS_global_scores/EMOS_global_{var_names[var_num]}_lead_{lead_time - 1}_scores.npy"
     np.save(model_filename, EMOS_glob_crps)
     
     
