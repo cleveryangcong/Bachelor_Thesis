@@ -16,7 +16,7 @@ def EMOS_local_load_model(var_num, lead_time):
     """
     var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
     var_name = var_names[var_num]
-    path = "/home/dchen/BA_CH_EN/models/EMOS_local_models/denormed/"
+    path = "/Data/Delong_BA_Data/models/EMOS_local/"
 
     # Create a 2D list for the models
     models = [[None for _ in range(130)] for _ in range(120)]

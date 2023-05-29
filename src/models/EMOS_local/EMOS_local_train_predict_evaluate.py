@@ -73,7 +73,7 @@ def EMOS_local_train(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, v
             )
 
             # Save the model
-            model_filename = f"/home/dchen/BA_CH_EN/models/EMOS_local_models/denormed/EMOS_loc_{var_names[var_num]}_lead_time_{lead_time - 1}_{lat}_{lon}_denormed.h5"
+            model_filename = f"/Data/Delong_BA_Data/models/EMOS_local/EMOS_loc_{var_names[var_num]}_lead_time_{lead_time - 1}_{lat}_{lon}_denormed.h5"
             
             # Define callbacks for early stopping and model checkpointing
             early_stopping = EarlyStopping(monitor="val_loss", patience=3)
@@ -107,7 +107,7 @@ def EMOS_local_load_model_var_lead(var_num, lead_time):
     """
     var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
     var_name = var_names[var_num]
-    path = "/home/dchen/BA_CH_EN/models/EMOS_local_models/denormed/"
+    path = "/Data/Delong_BA_Data/models/EMOS_local/"
 
     # Create a 2D list for the models
     models = [[None for _ in range(130)] for _ in range(120)]
