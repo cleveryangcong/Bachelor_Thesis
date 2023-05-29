@@ -1,6 +1,7 @@
 import os
 import fnmatch
 import tensorflow as tf
+from src.utils.CRPS import *
 
 def EMOS_global_load_model(var_name):
     """
@@ -23,7 +24,11 @@ def EMOS_global_load_model(var_name):
     model_files = [file for file in files if fnmatch.fnmatch(file, file_pattern)]
 
     # Load each model file and store it in a list
-    models = [tf.keras.models.load_model(os.path.join(path, file)) for file in model_files]
+    models = [tf.keras.models.load_model(os.path.join(path, file), custom_objects={
+                "crps_cost_function": crps_cost_function,
+                "crps_cost_function_trunc": crps_cost_function_trunc
+            }) for file in model_files]
+
 
     return models
 

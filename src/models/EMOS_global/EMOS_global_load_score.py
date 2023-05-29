@@ -29,11 +29,11 @@ def EMOS_global_load_score_t2m():
     '''
     Function to load t2m EMOS global scores
     '''
-    return EMOS_global_load_lead_lat_lon('t2m')
+    return EMOS_global_load_score('t2m')
 
 
 def EMOS_global_load_score_ws10():
     '''
     Function to load ws10 EMOS global scores
     '''
-    return crps_load_lead_lat_lon('ws10')                                  
+    return EMOS_global_load_score('ws10')                                  
