@@ -87,4 +87,5 @@ target/
 .mypy_cache/
 
 # Models
-models/
+/models/
+!src/models/
