@@ -3,10 +3,6 @@ import fnmatch
 import tensorflow as tf
 from src.utils.CRPS import *
 
-import tensorflow as tf
-import os
-import fnmatch
-
 def EMOS_global_load_model(var_name):
     """
     Load all the saved EMOS global models for a specific variable.
