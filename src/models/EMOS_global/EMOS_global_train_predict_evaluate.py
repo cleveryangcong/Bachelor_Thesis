@@ -200,7 +200,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # Create a pool of worker processes
-    pool = mp.Pool(5)
+    pool = mp.Pool(10)
 
     # Create a list to store the results
     results = []
