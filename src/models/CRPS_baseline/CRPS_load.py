@@ -19,11 +19,15 @@ def crps_load_lead_lat_lon(var_name):
 
     # Filter the list to only include .npy files that match the file pattern
     npy_files = [file for file in files if fnmatch.fnmatch(file, file_pattern)]
+    
+    # Sort the file list based on the lead time
+    npy_files.sort(key=lambda file: int(file.split('_')[2]))
 
     # Load each .npy file and store it in a list
     arrays = [np.load(os.path.join(path, file)) for file in npy_files]
 
     return arrays
+
 
 def crps_load_lead_lat_lon_t2m():
     '''
