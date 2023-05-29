@@ -36,7 +36,7 @@ def EMOS_global_train(
     optimizer="Adam",
 ):
     """
-    Train all global EMOS models for a specific variable and lead_time
+    Train a global EMOS models for a specific variable and lead_time
 
     Args: 
         var_num (integer): number between 0 - 5 for each of the variables["u10", "v10", "t2m", "t850", "z500", "ws10"]
