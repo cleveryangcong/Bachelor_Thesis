@@ -92,6 +92,7 @@ def EMOS_local_train(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, v
                 epochs=epochs,
                 validation_split=validation_split,
                 callbacks=[early_stopping, model_checkpoint],
+                verbose = 0
             )
             
 def EMOS_local_load_model_var_lead(var_num, lead_time):
@@ -176,7 +177,6 @@ def EMOS_local_predict_evaluate(var_num, lead_time):
                     X_test_var_denormed.isel(mean_std=0).values.flatten(),
                     X_test_var_denormed.isel(mean_std=1).values.flatten(),
                 ],
-                verbose=1,
             )
 
             # Compute CRPS for the predictions
@@ -228,7 +228,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # Create a pool of worker processes
-    pool = mp.Pool(10)
+    pool = mp.Pool(12)
 
     # Create a list to store the results
     results = []
