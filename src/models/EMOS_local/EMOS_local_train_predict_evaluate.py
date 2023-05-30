@@ -114,10 +114,10 @@ def EMOS_local_load_model_var_lead(var_num, lead_time):
     models = [[None for _ in range(130)] for _ in range(120)]
 
     # Load each model file and store it in the 2D list
-    for lat in range(120):
+    for lat in tqdm(range(120)):
         for lon in range(130):
             # Create the filename
-            filename = f"EMOS_loc_{var_name}_lead_time_{lead_time - 1}_{lat}_{lon}_denormed.h5"
+            filename = f"EMOS_loc_{var_name}_lead_time_{lead_time}_{lat}_{lon}_denormed.h5"
             model_path = os.path.join(path, filename)
 
             # Load the model and store it in the list
