@@ -21,7 +21,7 @@ def EMOS_global_load_score(var_name):
     npy_files = [file for file in files if fnmatch.fnmatch(file, file_pattern)]
     
     # Sort the file list based on the lead time
-    npy_files.sort(key=lambda file: int(file.split('_')[3]))
+    npy_files.sort(key=lambda file: int(file.split('_')[4]))
     
     # Load each .npy file and store it in a list
     arrays = [np.load(os.path.join(path, file)) for file in npy_files]
