@@ -3,7 +3,7 @@ import xarray as xr
 
 
 
-def make_X_train_array(X_array_all_denorm, lead_time):
+def make_X_array(X_array_all_denorm, lead_time):
     """
     makes a training array with all of the variable mean and std combined, including embedding array
 Args:
@@ -18,7 +18,7 @@ Returns:
     for var in range(6):
         for mean_std in range(2):
             X_train_part, embedding = flatten_with_grid_ids(
-                dat_X_lead_all_denorm[var][lead_time].isel(mean_std=mean_std)
+                X_array_all_denorm[var][lead_time].isel(mean_std=mean_std)
             )
             X_train_lead_denorm_list.append(X_train_part)
 
