@@ -1,4 +1,5 @@
 import xarray as xr
+import numpy as np
 
 def load_data_all_train_proc_denorm(chunks=None):
     """
@@ -180,8 +181,13 @@ def load_data_ws10_test_proc_denorm():
     return dat_all[5]
 
 
-
-
+def load_max_mean_std_values_denorm():
+    '''
+    load all max mean and std values to scale the denormed data with
+    '''
+    mean_max = np.load("/Data/Delong_BA_Data/mean_std_max_values/denorm/mean_max.npy")
+    std_max = np.load("/Data/Delong_BA_Data/mean_std_max_values/denorm/std_max.npy")
+    return mean_max, std_max
 
 
 
