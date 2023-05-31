@@ -32,7 +32,7 @@ from src.models.CRPS_baseline.CRPS_load import *
 
 
 
-def EMOS_local_train(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, validation_split=0.2, optimizer="Adam"):
+def EMOS_local_train(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, validation_split=0.2, optimizer="Adam", save=True):
     """
     Train a local EMOS model for a specific variable and lead time for all individual grid points.
 
@@ -44,6 +44,7 @@ def EMOS_local_train(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, v
         lr (float): Learning rate for the optimizer.
         validation_split (float): The fraction of the training data to be used as validation data.
         optimizer (str): The optimizer to use. Default is "Adam".
+        save (bool): If True, saves the trained model.
 
     Returns:
         None
@@ -76,14 +77,18 @@ def EMOS_local_train(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, v
                 compile=True, lr=lr, loss=crps, optimizer=optimizer
             )
 
-            # Save the model
-            model_filename = f"/Data/Delong_BA_Data/models/EMOS_local/EMOS_loc_{var_names[var_num]}_lead_time_{lead_time - 1}_{lat}_{lon}_denormed.h5"
-            
             # Define callbacks for early stopping and model checkpointing
             early_stopping = EarlyStopping(monitor="val_loss", patience=3)
-            model_checkpoint = ModelCheckpoint(
-                model_filename, monitor="val_loss", mode="min", save_best_only=True
-            )
+
+            callbacks = [early_stopping]
+            
+            if save:
+                # Save the model
+                model_filename = f"/Data/Delong_BA_Data/models/EMOS_local/EMOS_loc_{var_names[var_num]}_lead_time_{lead_time - 1}_{lat}_{lon}_denormed.h5"
+                model_checkpoint = ModelCheckpoint(
+                    model_filename, monitor="val_loss", mode="min", save_best_only=True
+                )
+                callbacks.append(model_checkpoint)
             
             # Fit the model to the training data
             EMOS_loc.fit(
@@ -95,10 +100,10 @@ def EMOS_local_train(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, v
                 batch_size=batch_size,
                 epochs=epochs,
                 validation_split=validation_split,
-                callbacks=[early_stopping, model_checkpoint],
-                verbose = 1
+                callbacks=callbacks,
+                verbose=1
             )
-            
+
             
             
 def main(
@@ -127,6 +132,7 @@ if __name__ == "__main__":
     parser.add_argument('--lr', type=float, default=0.001, help='learning rate (default: 0.001)')
     parser.add_argument('--validation_split', type=float, default=0.2, help='validation split(default: 0.2)')
     parser.add_argument('--optimizer', type=str, default="Adam", help='Optimizer to use(default: Adam)')
+    parser.add_argument('--save', type=bool, default=True, help='Whether to save model or not(default: Adam)')
     # Parse the arguments
     args = parser.parse_args()
     
