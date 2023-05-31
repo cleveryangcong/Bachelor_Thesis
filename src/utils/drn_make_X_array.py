@@ -56,7 +56,7 @@ def flatten_with_grid_ids(da):
     lon_shape = da.sizes["lon"]
 
     # Generate a 2D array with the grid point ID for each (lat, lon) pair
-    grid_id_2d = np.arange(lat_shape * lon_shape).reshape(lat_shape, lon_shape) + 1
+    grid_id_2d = np.arange(lat_shape * lon_shape).reshape(lat_shape, lon_shape)
 
     # Repeat the 2D grid ID array along the other dimensions to match the shape of the DataArray
     grid_id_nd = np.repeat(grid_id_2d[None, :, :], da.sizes["forecast_date"], axis=0)
