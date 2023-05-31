@@ -1,6 +1,6 @@
 import numpy as np
 import xarray as xr
-
+import data.processed.load_data_processed_denormed as ldpd
 
 
 def make_X_array(X_array_all_denorm, lead_time):
@@ -15,11 +15,14 @@ Returns:
     
     """
     X_train_lead_denorm_list = []
+    mean_max, std_max = ldpd.load_max_mean_std_values_denorm()
+    mean_std_max = [mean_max, std_max]
     for var in range(6):
         for mean_std in range(2):
             X_train_part, embedding = flatten_with_grid_ids(
                 X_array_all_denorm[var][lead_time].isel(mean_std=mean_std)
             )
+            X_train_part = X_train_part / mean_std_max[mean_std][var, lead_time]
             X_train_lead_denorm_list.append(X_train_part)
 
     # get length of individual arrays and total count
