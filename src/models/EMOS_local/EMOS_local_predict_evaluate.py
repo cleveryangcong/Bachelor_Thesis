@@ -8,6 +8,7 @@ import keras.backend as K
 import tensorflow as tf
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
+
 # Visualization
 import matplotlib.pyplot as plt
 
@@ -29,41 +30,37 @@ from src.models.CRPS_baseline.CRPS_load import *
 
 
 
-def EMOS_local_load_model_var_lead(var_num, lead_time):
+def EMOS_local_load_model_var_lead(var_num, lead_time, lat, lon):
     """
-    Load all the saved local EMOS models for a specific variable and arrange them in a 2D list.
+    Load the saved local EMOS model for a specific variable, lead time, latitude, and longitude.
 
     Args:
         var_num (int): Variable number between 0 - 5 corresponding to the variables ["u10", "v10", "t2m", "t850", "z500", "ws10"].
         lead_time (int): Lead time number between 0 - 30.
+        lat (int): Latitude index.
+        lon (int): Longitude index.
 
     Returns:
-        list: A 2D list (120 x 130) of TensorFlow models.
+        TensorFlow model or None if model file does not exist.
     """
     var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
     var_name = var_names[var_num]
     path = "/Data/Delong_BA_Data/models/EMOS_local/"
 
-    # Create a 2D list for the models
-    models = [[None for _ in range(130)] for _ in range(120)]
+    # Create the filename
+    filename = f"EMOS_loc_{var_name}_lead_time_{lead_time}_{lat}_{lon}_denormed.h5"
+    model_path = os.path.join(path, filename)
 
-    # Load each model file and store it in the 2D list
-    for lat in tqdm(range(120)):
-        for lon in range(130):
-            # Create the filename
-            filename = f"EMOS_loc_{var_name}_lead_time_{lead_time}_{lat}_{lon}_denormed.h5"
-            model_path = os.path.join(path, filename)
-
-            # Load the model and store it in the list
-            if os.path.isfile(model_path):
-                models[lat][lon] = tf.keras.models.load_model(
-                    model_path,
-                    custom_objects={
-                        "crps_cost_function": crps_cost_function,
-                        "crps_cost_function_trunc": crps_cost_function_trunc,
-                    },
-                )
-    return models
+    # Load the model and return
+    if os.path.isfile(model_path):
+        return tf.keras.models.load_model(
+            model_path,
+            custom_objects={
+                "crps_cost_function": crps_cost_function,
+                "crps_cost_function_trunc": crps_cost_function_trunc,
+            },
+        )
+    return None
 
 
 def EMOS_local_predict_evaluate(var_num, lead_time):
@@ -77,9 +74,6 @@ def EMOS_local_predict_evaluate(var_num, lead_time):
     Returns:
         None
     """
-    # Load Models
-    EMOS_local_models = EMOS_local_load_model_var_lead(var_num, lead_time)
-
     # Adjust lead_time for 1-based indexing
     lead_time += 1
 
@@ -97,6 +91,12 @@ def EMOS_local_predict_evaluate(var_num, lead_time):
 
     for lat in range(120):
         for lon in range(130):
+            # Load Models
+            model = EMOS_local_load_model_var_lead(var_num, lead_time, lat, lon)
+            
+            if model is None:
+                continue
+            
             # Extract the data for the specific lead_time and grid point
             X_test_var_denormed = test_var_denormed[
                 list(test_var_denormed.data_vars.keys())[0]
@@ -106,7 +106,7 @@ def EMOS_local_predict_evaluate(var_num, lead_time):
             ].isel(lead_time=lead_time, lat=lat, lon=lon)
 
             # Predict using the local model for the grid point
-            EMOS_loc_preds = EMOS_local_models[lat][lon].predict(
+            EMOS_loc_preds = model.predict(
                 [
                     X_test_var_denormed.isel(mean_std=0).values.flatten(),
                     X_test_var_denormed.isel(mean_std=1).values.flatten(),
@@ -128,9 +128,14 @@ def EMOS_local_predict_evaluate(var_num, lead_time):
             # Store the mean CRPS for the grid point
             EMOS_loc_crps_all[lat][lon] = EMOS_loc_crps
 
+            # Clear session and delete the model
+            K.clear_session()
+            del model
+
     # Save the grid of mean CRPS scores
     model_filename = f"/Data/Delong_BA_Data/scores/EMOS_local_scores/EMOS_local_{var_names[var_num]}_lead_{lead_time - 1}_scores.npy"
     np.save(model_filename, EMOS_loc_crps_all)
+
 
 def main(
     var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, validation_split=0.2, optimizer="Adam"
