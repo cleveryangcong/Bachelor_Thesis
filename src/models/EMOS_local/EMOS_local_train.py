@@ -31,12 +31,19 @@ import data.processed.load_data_processed_denormed as ldpd
 from src.models.CRPS_baseline.CRPS_load import *
 
 
+class BestScoreCallback(Callback):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.best_score = float("inf")  # Initialize the best score as infinity
 
-class PrintBestScore(Callback):
-    """Custom Keras callback that prints the best validation score at the end of training"""
+    def on_epoch_end(self, epoch, logs=None):
+        current_val_loss = logs.get("val_loss")
+        if np.less(current_val_loss, self.best_score):
+            self.best_score = current_val_loss  # Update the best score
+
     def on_train_end(self, logs=None):
-        best_score = min(self.model.history.history["val_loss"])
-        print(f"Best validation score for this model: {best_score}")
+        print(f"Best validation score = {self.best_score}")
+
         
 
 def EMOS_local_train(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, validation_split=0.2, optimizer="Adam", save=True):
@@ -84,11 +91,10 @@ def EMOS_local_train(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, v
                 compile=True, lr=lr, loss=crps, optimizer=optimizer
             )
 
-            # Define callbacks for early stopping and model checkpointing
+            # Define callbacks for early stopping and best_score_callback
             early_stopping = EarlyStopping(monitor="val_loss", patience=3)
-            print_best_score = PrintBestScore()
-
-            callbacks = [early_stopping, print_best_score]
+            best_score_callback = BestScoreCallback()
+            callbacks = [early_stopping, best_score_callback]
             
             if save:
                 # Save the model
