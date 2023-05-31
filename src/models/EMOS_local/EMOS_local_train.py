@@ -101,7 +101,7 @@ def EMOS_local_train(var_num, lead_time, batch_size=32, epochs=30, lr=0.01, vali
                 epochs=epochs,
                 validation_split=validation_split,
                 callbacks=callbacks,
-                verbose=1
+                verbose=0
             )
 
             
