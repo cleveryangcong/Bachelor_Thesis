@@ -10,7 +10,7 @@ Args:
     X_array_all_denorm (nested_list): 6x31, X values for each variable and lead_time
     lead_time (int): the lead_time for which to construct the training array (0 - 30)
 Returns:
-    result (array): Return array with all X_means and stds combined
+    result (array): Return array with all X_means and stds combined, order: variable_i_mean, variables_i_std, for i = 1,...,6
     embedding (array): embedding array with all embeddings in same order as results
     
     """
