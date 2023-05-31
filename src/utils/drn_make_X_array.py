@@ -5,7 +5,7 @@ import data.processed.load_data_processed_denormed as ldpd
 
 def make_X_array(X_array_all_denorm, lead_time):
     """
-    makes a training array with all of the variable mean and std combined, including embedding array
+    makes a training array with all of the variable mean and std combined, including embedding array while scaling them with their max values
 Args:
     X_array_all_denorm (nested_list): 6x31, X values for each variable and lead_time
     lead_time (int): the lead_time for which to construct the training array (0 - 30)
