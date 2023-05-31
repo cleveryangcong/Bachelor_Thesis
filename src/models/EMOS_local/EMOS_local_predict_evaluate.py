@@ -154,7 +154,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # Create a pool of worker processes
-    pool = mp.Pool(12)
+    pool = mp.Pool(16)
 
     # Create a list to store the results
     results = []
