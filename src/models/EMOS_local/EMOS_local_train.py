@@ -32,7 +32,7 @@ from src.models.CRPS_baseline.CRPS_load import *
 
 
 
-def EMOS_local_train(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, validation_split=0.2, optimizer="Adam", save=True):
+def EMOS_local_train(var_num, lead_time, batch_size=32, epochs=30, lr=0.01, validation_split=0.2, optimizer="Adam", save=True):
     """
     Train a local EMOS model for a specific variable and lead time for all individual grid points.
 
@@ -137,7 +137,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # Create a pool of worker processes
-    pool = mp.Pool(15)
+    pool = mp.Pool(16)
 
     # Create a list to store the results
     results = []
