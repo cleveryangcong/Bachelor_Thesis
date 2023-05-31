@@ -10,7 +10,7 @@ import multiprocessing as mp
 # TensorFlow and Keras
 import keras.backend as K
 import tensorflow as tf
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import Callback, EarlyStopping, ModelCheckpoint
 
 # Visualization
 import matplotlib.pyplot as plt
