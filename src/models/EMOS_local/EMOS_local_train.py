@@ -32,6 +32,13 @@ from src.models.CRPS_baseline.CRPS_load import *
 
 
 
+class PrintBestScore(Callback):
+    """Custom Keras callback that prints the best validation score at the end of training"""
+    def on_train_end(self, logs=None):
+        best_score = min(self.model.history.history["val_loss"])
+        print(f"Best validation score for this model: {best_score}")
+        
+
 def EMOS_local_train(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, validation_split=0.2, optimizer="Adam", save=True):
     """
     Train a local EMOS model for a specific variable and lead time for all individual grid points.
@@ -79,8 +86,9 @@ def EMOS_local_train(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, v
 
             # Define callbacks for early stopping and model checkpointing
             early_stopping = EarlyStopping(monitor="val_loss", patience=3)
+            print_best_score = PrintBestScore()
 
-            callbacks = [early_stopping]
+            callbacks = [early_stopping, print_best_score]
             
             if save:
                 # Save the model
@@ -89,7 +97,7 @@ def EMOS_local_train(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, v
                     model_filename, monitor="val_loss", mode="min", save_best_only=True
                 )
                 callbacks.append(model_checkpoint)
-            
+
             # Fit the model to the training data
             EMOS_loc.fit(
                 [
@@ -101,8 +109,9 @@ def EMOS_local_train(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, v
                 epochs=epochs,
                 validation_split=validation_split,
                 callbacks=callbacks,
-                verbose=1
+                verbose=0
             )
+
 
             
             
