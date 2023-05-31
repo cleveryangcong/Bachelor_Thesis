@@ -16,7 +16,7 @@ def build_emb_model(
     emb_size,
     max_id,
     compile=False,
-    optimizer="adam",
+    optimizer="Adam",
     lr=0.01,
     loss=crps_cost_function,
     activation="relu",
@@ -53,6 +53,6 @@ def build_emb_model(
     model = Model(inputs=[features_in, id_in], outputs=x)
 
     if compile:
-        opt = keras.optimizers.__dict__[optimizer](lr=lr)
+        opt = keras.optimizers.__dict__[optimizer](learning_rate=lr)
         model.compile(optimizer=opt, loss=loss)
     return model
