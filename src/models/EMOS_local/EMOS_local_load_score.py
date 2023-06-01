@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import fnmatch
+import pickle
 
 def EMOS_local_load_score(var_name):
     '''
@@ -28,15 +29,38 @@ def EMOS_local_load_score(var_name):
 
     return arrays
 
-def EMOS_global_load_score_t2m():
+def EMOS_local_load_score_t2m():
     '''
     Function to load t2m EMOS local scores
     '''
     return EMOS_local_load_score('t2m')
 
 
-def EMOS_global_load_score_ws10():
+def EMOS_local_load_score_ws10():
     '''
     Function to load ws10 EMOS local scores
     '''
     return EMOS_local_load_score('ws10')   
+
+def EMOS_local_load_hyper_score(var_name):
+    '''
+    Loads all hyper scores and params of a given variable
+    '''
+
+    path = "/Data/Delong_BA_Data/scores/EMOS_local_hyper_scores/"
+    # Create the file pattern based on the variable name
+    file_pattern = f'EMOS_local_hyper_{var_name}_*_*.pkl'
+
+    # List all files in the directory
+    files = os.listdir(path)
+
+    # Filter the list to only include .pkl files that match the file pattern
+    pkl_files = [file for file in files if fnmatch.fnmatch(file, file_pattern)]
+
+    # Sort the file list based on the lead time
+    pkl_files.sort(key=lambda file: int(file.split('_')[5]))
+
+    # Load each .pkl file and store it in a list
+    arrays = [pickle.load(open(os.path.join(path, file), 'rb')) for file in pkl_files]
+
+    return arrays
