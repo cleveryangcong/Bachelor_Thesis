@@ -7,6 +7,8 @@ import numpy as np
 import argparse
 import multiprocessing as mp
 from itertools import product
+import pickle
+
 
 # TensorFlow and Keras
 import keras.backend as K
@@ -150,3 +152,28 @@ def EMOS_local_hyper_tune(var_num, lead_time, batch_sizes=[4096], epochs=[10], l
             best_params = params
             
     return best_params, best_score
+
+
+def main():
+    var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
+    var_num = 5
+    lead_time = 0 
+    epochs = [30]
+    batch_sizes = [32, 64, 128, 256]
+    lrs = [0.1, 0.01, 0.001]
+    optimizers = ['Adam', 'SGD']
+    best_params, best_score = EMOS_local_hyper_tune(var_num, lead_time, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers)
+    best_parms_score = [best_params, best_score]
+    
+    
+    path = f'/Data/Delong_BA_Data/scores/EMOS_local_hyper_scores/EMOS_local_hyper_{var_names[var_num]}_{lead_time}_{best_score}.pkl'
+    with open(path, 'wb') as file:
+    pickle.dump(best_parms_score, file)
+    
+if __name__ == "__main__":
+    # Call the main function
+    main()
+    
+    
+    
+    
