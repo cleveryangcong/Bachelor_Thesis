@@ -26,6 +26,21 @@ import data.processed.load_data_processed as ldp
 import data.processed.load_data_processed_denormed as ldpd
 from src.models.CRPS_baseline.CRPS_load import *
 
+
+class BestScoreCallback(Callback):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.best_score = float("inf")  # Initialize the best score as infinity
+
+    def on_epoch_end(self, epoch, logs=None):
+        current_val_loss = logs.get("val_loss")
+        if np.less(current_val_loss, self.best_score):
+            self.best_score = current_val_loss  # Update the best score
+
+    def on_train_end(self, logs=None):
+        print(f"Best validation score = {self.best_score}")
+        
+
 def EMOS_global_train(
     var_num,
     lead_time,
@@ -34,6 +49,7 @@ def EMOS_global_train(
     lr=0.001,
     validation_split=0.2,
     optimizer="Adam",
+    save = True
 ):
     """
     Train a global EMOS models for a specific variable and lead_time
@@ -71,21 +87,25 @@ def EMOS_global_train(
         compile=True, lr=lr, loss=crps, optimizer=optimizer
     )
 
-    # Define the filename for the model checkpoint
-    model_filename = (
-        "/Data/Delong_BA_Data/models/EMOS_global/EMOS_glob_"
-        + var_names[var_num]
-        + "_lead_time_"
-        + str(lead_time - 1)
-        + "_denormed.h5"
-    )
+    
 
     # Define callbacks for early stopping and model checkpointing
     early_stopping = EarlyStopping(monitor="val_loss", patience=3)
-    model_checkpoint = ModelCheckpoint(
-        model_filename, monitor="val_loss", mode="min", save_best_only=True
-    )
-
+    best_score_callback = BestScoreCallback()
+    callbacks = [early_stopping, best_score_callback]
+    
+    if save:
+        model_filename = (
+            "/Data/Delong_BA_Data/models/EMOS_global/EMOS_glob_"
+            + var_names[var_num]
+            + "_lead_time_"
+            + str(lead_time - 1)
+            + "_denormed.h5"
+        )
+        model_checkpoint = ModelCheckpoint(
+            model_filename, monitor="val_loss", mode="min", save_best_only=True
+        )
+        callbacks.append(model_checkpoint)
     # Fit the model to the training data
     EMOS_glob.fit(
         [
@@ -96,7 +116,7 @@ def EMOS_global_train(
         batch_size=batch_size,
         epochs=epochs,
         validation_split=validation_split,
-        callbacks=[early_stopping, model_checkpoint],
+        callbacks=callbacks,
     )
     
     
