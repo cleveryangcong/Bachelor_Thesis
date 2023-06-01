@@ -138,19 +138,16 @@ def EMOS_local_hyper_tune(var_num, lead_time, batch_sizes=[4096], epochs=[10], l
     combinations = list(product(batch_sizes, epochs, lrs, optimizers))
 
     # Initialize variables to store the best score and parameters
-    best_score = float('-inf')
+    best_score = float('inf') # It should be positive infinity
     best_params = None
 
-    # Iterate over all combinations and train your model
     for params in tqdm(combinations):
-        # Train your model with the current parameters and obtain a score
         score = EMOS_local_train_hyper(var_num, lead_time, batch_size = params[0], epochs = params[1], lr = params[2], optimizer = params[3], save = False)
-
         # Check if the current score is better than the previous best score
-        if score > best_score:
+        if score < best_score: # It should check if the score is lower
             best_score = score
             best_params = params
-            
+
     return best_params, best_score
 
 
