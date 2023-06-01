@@ -168,7 +168,7 @@ def main():
     
     path = f'/Data/Delong_BA_Data/scores/EMOS_local_hyper_scores/EMOS_local_hyper_{var_names[var_num]}_{lead_time}_{best_score}.pkl'
     with open(path, 'wb') as file:
-    pickle.dump(best_parms_score, file)
+        pickle.dump(best_parms_score, file)
     
 if __name__ == "__main__":
     # Call the main function
