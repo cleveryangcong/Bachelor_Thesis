@@ -43,14 +43,14 @@ class BestScoreCallback(Callback):
             self.best_score = current_val_loss  # Update the best score
 
     def on_train_end(self, logs=None):
-        print(f"Best validation score = {self.best_score}")
+#         print(f"Best validation score = {self.best_score}")
         
     def get_best_score(self):
         return self.best_score
 
         
 
-def EMOS_local_train(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, validation_split=0.2, optimizer="Adam", save=True):
+def EMOS_local_train_hyper(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, validation_split=0.2, optimizer="Adam", save=True):
     """
     Train a local EMOS model for a specific variable and lead time for all individual grid points.
 
@@ -142,7 +142,7 @@ def EMOS_local_hyper_tune(var_num, lead_time, batch_sizes=[4096], epochs=[10], l
     # Iterate over all combinations and train your model
     for params in combinations:
         # Train your model with the current parameters and obtain a score
-        score = EMOS_local_train_hyper(var_num, lead_time, batch_size = params[0], epoch = params[1], lr = params[2], optimizers = params[3], save = False)
+        score = EMOS_local_train_hyper(var_num, lead_time, batch_size = params[0], epochs = params[1], lr = params[2], optimizer = params[3], save = False)
 
         # Check if the current score is better than the previous best score
         if score > best_score:
