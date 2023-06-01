@@ -159,9 +159,9 @@ def main():
     var_num = 5
     lead_time = 0 
     epochs = [30]
-    batch_sizes = [32]
-    lrs = [0.1]
-    optimizers = ['Adam']
+    batch_sizes = [64, 128, 256, 512]
+    lrs = [0.1, 0.01, 0.001]
+    optimizers = ['Adam', 'SGD']
     best_params, best_score = EMOS_local_hyper_tune(var_num, lead_time, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers)
     best_parms_score = [best_params, best_score]
     

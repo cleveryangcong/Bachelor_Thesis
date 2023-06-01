@@ -58,7 +58,7 @@ def EMOS_local_load_hyper_score(var_name):
     pkl_files = [file for file in files if fnmatch.fnmatch(file, file_pattern)]
 
     # Sort the file list based on the lead time
-    pkl_files.sort(key=lambda file: int(file.split('_')[5]))
+    pkl_files.sort(key=lambda file: int(file.split('_')[4]))
 
     # Load each .pkl file and store it in a list
     arrays = [pickle.load(open(os.path.join(path, file), 'rb')) for file in pkl_files]
