@@ -107,7 +107,7 @@ def EMOS_local_train(var_num, lead_time, batch_size=32, epochs=30, lr=0.01, vali
             
             
 def main(
-    var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, validation_split=0.2, optimizer="Adam"
+    var_num, lead_time, batch_size=32, epochs=30, lr=0.01, validation_split=0.2, optimizer="Adam"
 ):
     EMOS_local_train(
         var_num,
@@ -127,9 +127,9 @@ if __name__ == "__main__":
 
     # Add the arguments
     parser.add_argument('var_num', type=int, help='Variable number between 0 and 5')
-    parser.add_argument('--batch_size', type=int, default=4096, help='batch size to use (default: 4096)')
-    parser.add_argument('--epochs', type=int, default=10, help='Number of epochs (default: 10)')
-    parser.add_argument('--lr', type=float, default=0.001, help='learning rate (default: 0.001)')
+    parser.add_argument('--batch_size', type=int, default=32, help='batch size to use (default: 4096)')
+    parser.add_argument('--epochs', type=int, default=30, help='Number of epochs (default: 10)')
+    parser.add_argument('--lr', type=float, default=0.01, help='learning rate (default: 0.001)')
     parser.add_argument('--validation_split', type=float, default=0.2, help='validation split(default: 0.2)')
     parser.add_argument('--optimizer', type=str, default="Adam", help='Optimizer to use(default: Adam)')
     parser.add_argument('--save', type=bool, default=True, help='Whether to save model or not(default: Adam)')
