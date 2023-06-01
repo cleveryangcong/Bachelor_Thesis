@@ -43,9 +43,6 @@ class BestScoreCallback(Callback):
         current_val_loss = logs.get("val_loss")
         if np.less(current_val_loss, self.best_score):
             self.best_score = current_val_loss  # Update the best score
-
-    def on_train_end(self, logs=None):
-#         print(f"Best validation score = {self.best_score}")
         
     def get_best_score(self):
         return self.best_score
