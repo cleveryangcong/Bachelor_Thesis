@@ -28,14 +28,14 @@ def EMOS_local_load_score(var_name):
 
     return arrays
 
-def EMOS_global_load_score_t2m():
+def EMOS_local_load_score_t2m():
     '''
     Function to load t2m EMOS local scores
     '''
     return EMOS_local_load_score('t2m')
 
 
-def EMOS_global_load_score_ws10():
+def EMOS_local_load_score_ws10():
     '''
     Function to load ws10 EMOS local scores
     '''
