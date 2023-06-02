@@ -7,6 +7,7 @@ Hypertune EMOS global for one variable for all lead_times of that variable
 import numpy as np
 import argparse
 import multiprocessing as mp
+from itertools import product
 
 # TensorFlow and Keras
 import keras.backend as K
