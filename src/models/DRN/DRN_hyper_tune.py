@@ -178,23 +178,24 @@ def DRN_hyper_tune(var_num, lead_time, hiddenlayer = [[]], emb_size = [3],  batc
 
 
 def main():
-    var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
-    var_num = 2
-    lead_time = 0 
-    hiddenlayer = []
-    emb_size = [3]
-    epochs = [10]
-    batch_sizes = [1024, 2048, 4096, 8192]
-    lrs = [0.1, 0.01, 0.001]
-    optimizers = ['Adam', 'SGD']
-    activation = ['relu']
-    best_params, best_score, all_params, all_scores = EMOS_global_hyper_tune(var_num, lead_time, hiddenlayer= hiddenlayer, emb_size = emb_size, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers, activation = activation)
-    best_parms_score = [best_params, best_score, lead_time, all_params, all_scores]
-    
-    
-    path = f'/Data/Delong_BA_Data/scores/DRN_hyper_scores/DRN_hyper_{var_names[var_num]}_{lead_time}_{best_score}.pkl'
-    with open(path, 'wb') as file:
-        pickle.dump(best_parms_score, file)
+    for i in [0, 15, 30]:
+        var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
+        var_num = 2
+        lead_time = i 
+        hiddenlayer = []
+        emb_size = [3]
+        epochs = [10]
+        batch_sizes = [1024, 2048, 4096, 8192]
+        lrs = [0.1, 0.01, 0.001]
+        optimizers = ['Adam', 'SGD']
+        activation = ['relu']
+        best_params, best_score, all_params, all_scores = EMOS_global_hyper_tune(var_num, lead_time, hiddenlayer= hiddenlayer, emb_size = emb_size, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers, activation = activation)
+        best_parms_score = [best_params, best_score, lead_time, all_params, all_scores]
+
+
+        path = f'/Data/Delong_BA_Data/scores/DRN_hyper_scores/DRN_hyper_{var_names[var_num]}_{lead_time}_{best_score}.pkl'
+        with open(path, 'wb') as file:
+            pickle.dump(best_parms_score, file)
     
 if __name__ == "__main__":
     # Call the main function
