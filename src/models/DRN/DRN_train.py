@@ -80,6 +80,7 @@ def DRN_train(
     )
     
     # Split the loaded data into features (X) and target (y)
+    # also adjusts for lead_time
     dat_X_train_lead_all_denorm, dat_y_train_lead_all_denorm = split_var_lead(
         train_var_denormed
     )
