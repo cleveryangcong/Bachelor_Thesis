@@ -137,18 +137,22 @@ def EMOS_global_hyper_tune(var_num, lead_time, batch_sizes=[4096], epochs=[10], 
     # Initialize variables to store the best score and parameters
     best_score = float('inf')
     best_params = None
+    all_scores = []
+    all_params = []
 
     # Iterate over all combinations and train your model
     for params in tqdm(combinations):
         # Train your model with the current parameters and obtain a score
         score = EMOS_global_train_hyper(var_num, lead_time, batch_size = params[0], epochs = params[1], lr = params[2], optimizer = params[3], save = False)
+        all_scores.append(score)
+        all_params.append(params)
 
         # Check if the current score is better than the previous best score
         if score < best_score:
             best_score = score
             best_params = params
             
-    return best_params, best_score
+    return best_params, best_score, all_params, all_scores
 
 
 def main():
@@ -159,9 +163,8 @@ def main():
     batch_sizes = [1024, 2048, 4096, 8192]
     lrs = [0.1, 0.01, 0.001]
     optimizers = ['Adam', 'SGD']
-    best_params, best_score = EMOS_global_hyper_tune(var_num, lead_time, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers)
-    best_parms_score = [best_params, best_score]
-    print(best_parms_score)
+    best_params, best_score, all_params, all_scores = EMOS_global_hyper_tune(var_num, lead_time, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers)
+    best_parms_score = [best_params, best_score, all_params, all_scores]
     
     path = f'/Data/Delong_BA_Data/scores/EMOS_global_hyper_scores/EMOS_global_hyper_{var_names[var_num]}_{lead_time}_{best_score}.pkl'
     with open(path, 'wb') as file:
