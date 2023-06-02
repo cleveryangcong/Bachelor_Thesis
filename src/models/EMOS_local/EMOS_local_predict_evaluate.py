@@ -92,7 +92,7 @@ def EMOS_local_predict_evaluate(var_num, lead_time):
     for lat in range(120):
         for lon in range(130):
             # Load Models
-            model = EMOS_local_load_model_var_lead(var_num, lead_time, lat, lon)
+            model = EMOS_local_load_model_var_lead(var_num, (lead_time - 1), lat, lon)
             
             if model is None:
                 continue
