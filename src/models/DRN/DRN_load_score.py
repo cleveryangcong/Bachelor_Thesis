@@ -60,7 +60,9 @@ def DRN_load_hyper_score(var_name):
     # Sort the file list based on the lead time
     pkl_files.sort(key=lambda file: int(file.split('_')[4]))
 
-    # Load each .pkl file and store it in a list
-    arrays = [pickle.load(open(os.path.join(path, file), 'rb')) for file in pkl_files]
+    arrays = []
+    for file in pkl_files:
+        with open(os.path.join(path, file), 'rb') as f:
+            arrays.append(pickle.load(f))
 
     return arrays
