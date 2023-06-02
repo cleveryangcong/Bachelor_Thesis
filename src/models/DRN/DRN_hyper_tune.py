@@ -160,18 +160,21 @@ def DRN_hyper_tune(var_num, lead_time, hiddenlayer = [[]], emb_size = [3],  batc
     # Initialize variables to store the best score and parameters
     best_score = float('inf')
     best_params = None
+    all_scores = []
+    all_params = []
 
     # Iterate over all combinations and train your model
     for params in tqdm(combinations):
         # Train your model with the current parameters and obtain a score
         score = DRN_train_hyper(var_num, lead_time, hiddenlayer = params[0], emb_size = params[1], batch_size = params[2], epochs = params[3], lr = params[4], optimizer = params[5], activation = params[6],save = False)
-
+        all_scores.append(score)
+        all_params.append(params)
         # Check if the current score is better than the previous best score
         if score < best_score:
             best_score = score
             best_params = params
             
-    return best_params, best_score
+    return best_params, best_score, all_params, all_scores
 
 
 def main():
@@ -185,8 +188,8 @@ def main():
     lrs = [0.1, 0.01, 0.001]
     optimizers = ['Adam', 'SGD']
     activation = ['relu']
-    best_params, best_score = EMOS_global_hyper_tune(var_num, lead_time, hiddenlayer= hiddenlayer, emb_size = emb_size, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers, activation = activation)
-    best_parms_score = [best_params, best_score]
+    best_params, best_score, all_params, all_scores = EMOS_global_hyper_tune(var_num, lead_time, hiddenlayer= hiddenlayer, emb_size = emb_size, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers, activation = activation)
+    best_parms_score = [best_params, best_score, lead_time, all_params, all_scores]
     
     
     path = f'/Data/Delong_BA_Data/scores/DRN_hyper_scores/DRN_hyper_{var_names[var_num]}_{lead_time}_{best_score}.pkl'
