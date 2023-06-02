@@ -1,5 +1,6 @@
 # Basics
 import numpy as np
+import argparse
 
 # Tensorflow and Keras
 import keras.backend as K
@@ -133,5 +134,77 @@ def DRN_train(
         callbacks=callbacks,
         verbose=1,
     )
+    
+def main(
+    var_num,
+    lead_time,
+    hidden_layer=[],
+    emb_size=3,
+    max_id=15599,
+    batch_size=8192,
+    epochs=10,
+    lr=0.01,
+    validation_split=0.2,
+    optimizer="Adam",
+    activation="relu",
+    save=True,
+):
+    # Run training algorithm
+    DRN_train(
+        var_num,
+        lead_time,
+        hidden_layer=hidden_layer,
+        emb_size=emb_size,
+        max_id=max_id,
+        batch_size=batch_size,
+        epochs=epochs,
+        lr=lr,
+        validation_split=validation_split,
+        optimizer=optimizer,
+        activation=activation,
+        save=save,
+    )
+    
+if __name__ == "__main__":
+# Create the parser
+    parser = argparse.ArgumentParser(description="Calculate CRPS for a given variable (DRN)")
+
+    # Add the arguments
+    parser.add_argument('var_num', type=int, help='Variable number between 0 and 5')
+    parser.add_argument('--emb_size', type=int, default=3, help='Embedding size (default: 3)')
+    # Continue adding the arguments
+    parser.add_argument('--max_id', type=int, default=15599, help='Maximum id number (default: 15599)')
+    parser.add_argument('--activation', type=str, default='relu', help='Activation function to use (default: relu)')
+    parser.add_argument('--save', type=bool, default=True, help='Option to save the model (default: True)')
+    parser.add_argument('--hidden_layer', type=str, default="", help='Define hidden layer sizes as comma-separated integers (e.g., "64,128,64"). Default is an empty list.')
+
+    parser.add_argument('--batch_size', type=int, default=4096, help='batch size to use (default: 4096)')
+    parser.add_argument('--epochs', type=int, default=10, help='Number of epochs (default: 10)')
+    parser.add_argument('--lr', type=float, default=0.001, help='learning rate (default: 0.001)')
+    parser.add_argument('--validation_split', type=float, default=0.2, help='validation split(default: 0.2)')
+    parser.add_argument('--optimizer', type=str, default="Adam", help='Optimizer to use(default: Adam)')
+    # Parse the arguments
+    args = parser.parse_args()
+    
+    # Create a pool of worker processes
+    pool = mp.Pool(10)
+
+    # Create a list to store the results
+    results = []
+
+    # Call the main function for each lead_time
+    for lead_time in range(31):
+    result = pool.apply_async(main, args=(args.var_num, lead_time, list(map(int, args.hidden_layer.split(","))), args.emb_size, args.max_id, args.batch_size, args.epochs, args.lr, args.validation_split, args.optimizer, args.activation, args.save))
+        results.append(result)
+    
+    # Close the pool of worker processes
+    pool.close()
+    
+    # Call get() on each result to raise any exceptions
+    for result in results:
+        result.get()
+    
+    # Wait for all processes to finish
+    pool.join()
     
     
