@@ -161,7 +161,7 @@ def main():
     optimizers = ['Adam', 'SGD']
     best_params, best_score = EMOS_global_hyper_tune(var_num, lead_time, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers)
     best_parms_score = [best_params, best_score]
-    
+    print(best_parms_score)
     
     path = f'/Data/Delong_BA_Data/scores/EMOS_global_hyper_scores/EMOS_global_hyper_{var_names[var_num]}_{lead_time}_{best_score}.pkl'
     with open(path, 'wb') as file:
