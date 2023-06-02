@@ -123,6 +123,7 @@ def EMOS_global_train_hyper(
         epochs=epochs,
         validation_split=validation_split,
         callbacks=callbacks,
+        verbose = 0
     )
     return best_score_callback.get_best_score()
 
