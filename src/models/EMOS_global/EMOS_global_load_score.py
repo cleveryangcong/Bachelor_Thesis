@@ -57,7 +57,7 @@ def EMOS_global_load_hyper_score(var_name):
     # Filter the list to only include .pkl files that match the file pattern
     pkl_files = [file for file in files if fnmatch.fnmatch(file, file_pattern)]
 
-    # Sort the file list based on the lead time
+    # Sort the file list based on the lead time, lowest first
     pkl_files.sort(key=lambda file: int(file.split('_')[4]))
 
     # Load each .pkl file and store it in a list
