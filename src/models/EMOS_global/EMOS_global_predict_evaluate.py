@@ -27,6 +27,7 @@ import data.processed.load_data_processed_denormed as ldpd
 from src.models.CRPS_baseline.CRPS_load import *
 
 def EMOS_global_load_model(var_num, lead_time):
+    var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
     model_filename = (
         "/Data/Delong_BA_Data/models/EMOS_global/EMOS_glob_"
         + var_names[var_num]
@@ -89,7 +90,7 @@ def EMOS_global_predict_evaluate(var_num, lead_time):
             X_test_var_denormed.isel(mean_std=0).values.flatten(),
             X_test_var_denormed.isel(mean_std=1).values.flatten(),
         ],
-        verbose=1,
+        verbose=0,
     )
 
     # Evaluate the model predictions using the chosen CRPS function
