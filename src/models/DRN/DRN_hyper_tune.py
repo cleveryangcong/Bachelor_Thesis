@@ -152,10 +152,10 @@ def DRN_train_hyper(
     return best_score_callback.get_best_score()
 
 
-def DRN_hyper_tune(var_num, lead_time, hiddenlayer = [[]], emb_size = [3],  batch_sizes=[4096], epochs=[10], lrs=[0.001], optimizers=["Adam"], validation_split=0.2, activation = ['relu']):
+def DRN_hyper_tune(var_num, lead_time, hidden_layer = [[]], emb_size = [3],  batch_sizes=[4096], epochs=[10], lrs=[0.001], optimizers=["Adam"], validation_split=0.2, activation = ['relu']):
 
     # Combine the hyperparameters using itertools.product
-    combinations = list(product(hiddenlayer, emb_size, batch_sizes, epochs, lrs, optimizers, activation))
+    combinations = list(product(hidden_layer, emb_size, batch_sizes, epochs, lrs, optimizers, activation))
 
     # Initialize variables to store the best score and parameters
     best_score = float('inf')
@@ -166,7 +166,7 @@ def DRN_hyper_tune(var_num, lead_time, hiddenlayer = [[]], emb_size = [3],  batc
     # Iterate over all combinations and train your model
     for params in tqdm(combinations):
         # Train your model with the current parameters and obtain a score
-        score = DRN_train_hyper(var_num, lead_time, hiddenlayer = params[0], emb_size = params[1], batch_size = params[2], epochs = params[3], lr = params[4], optimizer = params[5], activation = params[6],save = False)
+        score = DRN_train_hyper(var_num, lead_time, hidden_layer = params[0], emb_size = params[1], batch_size = params[2], epochs = params[3], lr = params[4], optimizer = params[5], activation = params[6],save = False)
         all_scores.append(score)
         all_params.append(params)
         # Check if the current score is better than the previous best score
@@ -182,14 +182,14 @@ def main():
         var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
         var_num = 2
         lead_time = i 
-        hiddenlayer = [[]]
+        hidden_layer = [[]]
         emb_size = [3]
         epochs = [10]
         batch_sizes = [1024, 2048, 4096, 8192]
         lrs = [0.1, 0.01, 0.001]
         optimizers = ['Adam', 'SGD']
         activation = ['relu']
-        best_params, best_score, all_params, all_scores = DRN_train_hyper(var_num, lead_time, hiddenlayer= hiddenlayer, emb_size = emb_size, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers, activation = activation)
+        best_params, best_score, all_params, all_scores = DRN_train_hyper(var_num, lead_time, hidden_layer= hidden_layer, emb_size = emb_size, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers, activation = activation)
         best_parms_score = [best_params, best_score, lead_time, all_params, all_scores]
 
 
