@@ -189,7 +189,7 @@ def main():
         lrs = [0.1, 0.01, 0.001]
         optimizers = ['Adam', 'SGD']
         activation = ['relu']
-        best_params, best_score, all_params, all_scores = EMOS_global_hyper_tune(var_num, lead_time, hiddenlayer= hiddenlayer, emb_size = emb_size, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers, activation = activation)
+        best_params, best_score, all_params, all_scores = DRN_train_hyper(var_num, lead_time, hiddenlayer= hiddenlayer, emb_size = emb_size, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers, activation = activation)
         best_parms_score = [best_params, best_score, lead_time, all_params, all_scores]
 
 
