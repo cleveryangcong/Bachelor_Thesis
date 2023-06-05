@@ -152,10 +152,10 @@ def DRN_train_hyper(
     return best_score_callback.get_best_score()
 
 
-def DRN_hyper_tune(var_num, lead_time, hidden_layer = [[]], emb_size = [3],  batch_sizes=[4096], epochs=[10], lrs=[0.001], optimizers=["Adam"], validation_split=0.2, activation = ['relu']):
+def DRN_hyper_tune(var_num, lead_time, hidden_layers = [[]], emb_size = [3],  batch_sizes=[4096], epochs=[10], lrs=[0.001], optimizers=["Adam"], validation_split=0.2, activation = ['relu']):
 
     # Combine the hyperparameters using itertools.product
-    combinations = list(product(hidden_layer, emb_size, batch_sizes, epochs, lrs, optimizers, activation))
+    combinations = list(product(hidden_layers, emb_size, batch_sizes, epochs, lrs, optimizers, activation))
 
     # Initialize variables to store the best score and parameters
     best_score = float('inf')
@@ -189,7 +189,7 @@ def main():
         lrs = [0.1, 0.01, 0.001]
         optimizers = ['Adam', 'SGD']
         activation = ['relu']
-        best_params, best_score, all_params, all_scores = DRN_train_hyper(var_num, lead_time, hidden_layer= hidden_layer, emb_size = emb_size, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers, activation = activation)
+        best_params, best_score, all_params, all_scores = DRN_hyper_tune(var_num, lead_time, hidden_layers= hidden_layer, emb_size = emb_size, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers, activation = activation)
         best_parms_score = [best_params, best_score, lead_time, all_params, all_scores]
 
 
