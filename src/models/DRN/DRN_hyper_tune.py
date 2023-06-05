@@ -182,7 +182,7 @@ def main():
         var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
         var_num = 2
         lead_time = i 
-        hiddenlayer = []
+        hiddenlayer = [[]]
         emb_size = [3]
         epochs = [10]
         batch_sizes = [1024, 2048, 4096, 8192]
