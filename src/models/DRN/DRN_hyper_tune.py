@@ -2,6 +2,7 @@
 import numpy as np
 import argparse
 import multiprocessing as mp
+from itertools import product
 
 # Tensorflow and Keras
 import keras.backend as K
