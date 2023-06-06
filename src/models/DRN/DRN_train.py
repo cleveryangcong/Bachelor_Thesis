@@ -189,15 +189,15 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # Create a pool of worker processes
-    pool = mp.Pool(10)
+    pool = mp.Pool(16)
 
     # Create a list to store the results
     results = []
 
     # Call the main function for each lead_time
     for lead_time in range(31):
-    result = pool.apply_async(main, args=(args.var_num, lead_time, list(map(int, args.hidden_layer.split(","))), args.emb_size, args.max_id, args.batch_size, args.epochs, args.lr, args.validation_split, args.optimizer, args.activation, args.save))
-        results.append(result)
+        result = pool.apply_async(main, args=(args.var_num, lead_time, list(map(int, args.hidden_layer.split(","))), args.emb_size, args.max_id, args.batch_size, args.epochs, args.lr, args.validation_split, args.optimizer, args.activation, args.save))
+            results.append(result)
     
     # Close the pool of worker processes
     pool.close()
