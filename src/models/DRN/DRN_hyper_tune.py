@@ -198,7 +198,6 @@ if __name__ == "__main__":
     # Create a list to store the results
     results = []
 
-    var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
     var_num = 2
     hidden_layers = [[]]
     emb_size = [3]
