@@ -198,13 +198,14 @@ if __name__ == "__main__":
     # Create a list to store the results
     results = []
 
+    var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
     var_num = 2
     hidden_layers = [[]]
     emb_size = [3]
-    epochs = [1]
-    batch_sizes = [1024]
-    lrs = [0.1]
-    optimizers = ['Adam']
+    epochs = [10]
+    batch_sizes = [1024, 2048, 4096, 8192]
+    lrs = [0.1, 0.01, 0.001]
+    optimizers = ['Adam', 'SGD']
     activation = ['relu']
 
     for i in [0, 15, 30]:
