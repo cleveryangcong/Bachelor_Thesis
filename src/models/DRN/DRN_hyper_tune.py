@@ -202,9 +202,9 @@ if __name__ == "__main__":
     hidden_layers = [[]]
     emb_size = [3]
     epochs = [10]
-    batch_sizes = [1024, 2048, 4096, 8192]
-    lrs = [0.1, 0.01, 0.001]
-    optimizers = ['Adam', 'SGD']
+    batch_sizes = [256 ,512, 1024]
+    lrs = [0.1, 0.01]
+    optimizers = ['Adam']
     activation = ['relu']
 
     for i in [0, 15, 30]:
