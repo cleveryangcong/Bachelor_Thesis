@@ -196,9 +196,9 @@ if __name__ == "__main__":
 
     # Call the main function for each lead_time
     for lead_time in range(31):
-    result = pool.apply_async(main, args=(args.var_num, lead_time, list(map(int, args.hidden_layer.split(","))), args.emb_size, args.max_id, args.batch_size, args.epochs, args.lr, args.validation_split, args.optimizer, args.activation, args.save))
-        results.append(result)
-    
+        result = pool.apply_async(main, args=(args.var_num, lead_time, list(map(int, args.hidden_layer.split(","))), args.emb_size, args.max_id, args.batch_size, args.epochs, args.lr, args.validation_split, args.optimizer, args.activation, args.save))
+            results.append(result)
+
     # Close the pool of worker processes
     pool.close()
     

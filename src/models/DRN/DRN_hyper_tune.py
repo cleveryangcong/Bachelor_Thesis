@@ -179,29 +179,50 @@ def DRN_hyper_tune(var_num, lead_time, hidden_layers = [[]], emb_size = [3],  ba
     return best_params, best_score, all_params, all_scores
 
 
-def main():
-    for i in [0, 15, 30]:
-        var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
-        var_num = 2
-        lead_time = i 
-        hidden_layers = [[]]
-        emb_size = [3]
-        epochs = [10]
-        batch_sizes = [1024, 2048, 4096, 8192]
-        lrs = [0.1, 0.01, 0.001]
-        optimizers = ['Adam', 'SGD']
-        activation = ['relu']
-        best_params, best_score, all_params, all_scores = DRN_hyper_tune(var_num, lead_time, hidden_layers= hidden_layers, emb_size = emb_size, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers, activation = activation)
-        best_parms_score = [best_params, best_score, lead_time, all_params, all_scores]
+def main(var_num, lead_time, hidden_layers, emb_size, batch_sizes, epochs, lrs, optimizers, activation, validation_split=0.2):
+
+    best_params, best_score, all_params, all_scores = DRN_hyper_tune(
+        var_num, lead_time, hidden_layers=hidden_layers, emb_size=emb_size, batch_sizes=batch_sizes, epochs=epochs, lrs=lrs, optimizers=optimizers, activation=activation)
+
+    best_parms_score = [best_params, best_score, lead_time, all_params, all_scores]
+
+    path = f'/Data/Delong_BA_Data/scores/DRN_hyper_scores/DRN_hyper_{var_names[var_num]}_{lead_time}_{best_score}.pkl'
+    with open(path, 'wb') as file:
+        pickle.dump(best_parms_score, file)
 
 
-        path = f'/Data/Delong_BA_Data/scores/DRN_hyper_scores/DRN_hyper_{var_names[var_num]}_{lead_time}_{best_score}.pkl'
-        with open(path, 'wb') as file:
-            pickle.dump(best_parms_score, file)
-    
 if __name__ == "__main__":
-    # Call the main function
-    main()
+    # Create a pool of worker processes
+    pool = mp.Pool(10)
+
+    # Create a list to store the results
+    results = []
+
+    var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
+    var_num = 2
+    hidden_layers = [[]]
+    emb_size = [3]
+    epochs = [1]
+    batch_sizes = [1024]
+    lrs = [0.1]
+    optimizers = ['Adam']
+    activation = ['relu']
+
+    for i in [0, 15, 30]:
+        lead_time = i
+        result = pool.apply_async(main, args=(var_num, lead_time, hidden_layers, emb_size, batch_sizes, epochs, lrs, optimizers, activation))
+        results.append(result)
+
+    # Close the pool of worker processes
+    pool.close()
+
+    # Call get() on each result to raise any exceptions
+    for result in results:
+        result.get()
+
+    # Wait for all processes to finish
+    pool.join()
+
 
 
 
