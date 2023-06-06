@@ -58,7 +58,7 @@ def DRN_load_hyper_score(var_name):
     pkl_files = [file for file in files if fnmatch.fnmatch(file, file_pattern)]
 
     # Sort the file list based on the lead time
-    pkl_files.sort(key=lambda file: int(file.split('_')[4]))
+    pkl_files.sort(key=lambda file: int(file.split('_')[3]))
 
     arrays = []
     for file in pkl_files:
