@@ -180,7 +180,7 @@ def DRN_hyper_tune(var_num, lead_time, hidden_layers = [[]], emb_size = [3],  ba
 
 
 def main(var_num, lead_time, hidden_layers, emb_size, batch_sizes, epochs, lrs, optimizers, activation, validation_split=0.2):
-
+    var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
     best_params, best_score, all_params, all_scores = DRN_hyper_tune(
         var_num, lead_time, hidden_layers=hidden_layers, emb_size=emb_size, batch_sizes=batch_sizes, epochs=epochs, lrs=lrs, optimizers=optimizers, activation=activation)
 
@@ -198,7 +198,6 @@ if __name__ == "__main__":
     # Create a list to store the results
     results = []
 
-    var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
     var_num = 2
     hidden_layers = [[]]
     emb_size = [3]
