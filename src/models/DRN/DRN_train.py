@@ -165,6 +165,7 @@ def main(
         optimizer=optimizer,
         activation=activation,
         save=save,
+        verbose = 0
     )
     
 if __name__ == "__main__":
