@@ -178,7 +178,8 @@ if __name__ == "__main__":
 
     for lead_time in [0, 15, 30]:
         for params in tqdm(combinations):
-            async_result = pool.apply_async(DRN_train_hyper, args=(var_num, lead_time, params[0], params[1], params[2], params[3], params[4], optimizer = params[5], activation = params[6]))
+            async_result = pool.apply_async(DRN_train_hyper, args=(var_num, lead_time, params[0], params[1], 15599, params[2], params[3], params[4],0.2,  params[5], params[6], True))
+
             async_results.append((lead_time, params, async_result))
 
     # Wait for all processes to finish and collect results
