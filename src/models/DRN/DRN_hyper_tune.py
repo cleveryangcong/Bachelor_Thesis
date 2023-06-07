@@ -4,6 +4,7 @@ import argparse
 import multiprocessing as mp
 from itertools import product
 import pickle
+import pandas as pd
 
 # Tensorflow and Keras
 import keras.backend as K
@@ -153,74 +154,54 @@ def DRN_train_hyper(
     
     return best_score_callback.get_best_score()
 
-
-def DRN_hyper_tune(var_num, lead_time, hidden_layers = [[]], emb_size = [3],  batch_sizes=[4096], epochs=[10], lrs=[0.001], optimizers=["Adam"], validation_split=0.2, activation = ['relu']):
-
-    # Combine the hyperparameters using itertools.product
-    combinations = list(product(hidden_layers, emb_size, batch_sizes, epochs, lrs, optimizers, activation))
-
-    # Initialize variables to store the best score and parameters
-    best_score = float('inf')
-    best_params = None
-    all_scores = []
-    all_params = []
-
-    # Iterate over all combinations and train your model
-    for params in tqdm(combinations):
-        # Train your model with the current parameters and obtain a score
-        score = DRN_train_hyper(var_num, lead_time, hidden_layer = params[0], emb_size = params[1], batch_size = params[2], epochs = params[3], lr = params[4], optimizer = params[5], activation = params[6],save = False)
-        all_scores.append(score)
-        all_params.append(params)
-        # Check if the current score is better than the previous best score
-        if score < best_score:
-            best_score = score
-            best_params = params
-            
-    return best_params, best_score, all_params, all_scores
-
-
-def main(var_num, lead_time, hidden_layers, emb_size, batch_sizes, epochs, lrs, optimizers, activation, validation_split=0.2):
-    var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
-    best_params, best_score, all_params, all_scores = DRN_hyper_tune(
-        var_num, lead_time, hidden_layers=hidden_layers, emb_size=emb_size, batch_sizes=batch_sizes, epochs=epochs, lrs=lrs, optimizers=optimizers, activation=activation)
-
-    best_parms_score = [best_params, best_score, lead_time, all_params, all_scores]
-
-    path = f'/Data/Delong_BA_Data/scores/DRN_hyper_scores/DRN_hyper_{var_names[var_num]}_{lead_time}_{best_score}.pkl'
-    with open(path, 'wb') as file:
-        pickle.dump(best_parms_score, file)
-
-
 if __name__ == "__main__":
     # Create a pool of worker processes
     pool = mp.Pool(10)
 
-    # Create a list to store the results
-    results = []
-
     var_num = 2
     hidden_layers = [[]]
     emb_size = [3]
-    epochs = [10]
-    batch_sizes = [256 ,512, 1024]
+    epochs = [2]
+    batch_sizes = [4096, 8192]
     lrs = [0.1, 0.01]
     optimizers = ['Adam']
     activation = ['relu']
+    run = 0 #Always change this
+    
+    # Combine the hyperparameters using itertools.product
+    combinations = list(product(hidden_layers, emb_size, batch_sizes, epochs, lrs, optimizers, activation))
 
-    for i in [0, 15, 30]:
-        lead_time = i
-        result = pool.apply_async(main, args=(var_num, lead_time, hidden_layers, emb_size, batch_sizes, epochs, lrs, optimizers, activation))
-        results.append(result)
+    # Create a DataFrame to store results
+    result_df = pd.DataFrame(columns=['lead_time', 'hidden_layer', 'emb_size', 'batch_size', 'epochs', 'lr', 'optimizer', 'activation', 'score'])
+
+    async_results = []
+
+    for lead_time in [0, 15, 30]:
+        for params in tqdm(combinations):
+            async_result = pool.apply_async(DRN_train_hyper, args=(var_num, lead_time, params[0], params[1], params[2], params[3], params[4], optimizer = params[5], activation = params[6]))
+            async_results.append((lead_time, params, async_result))
+
+    # Wait for all processes to finish and collect results
+    for lead_time, params, async_result in async_results:
+        score = async_result.get()
+        result_df = result_df.append({
+            'lead_time': lead_time,
+            'hidden_layer': params[0], 
+            'emb_size': params[1], 
+            'batch_size': params[2], 
+            'epochs': params[3], 
+            'lr': params[4], 
+            'optimizer': params[5], 
+            'activation': params[6], 
+            'score': score}, ignore_index=True)
+
+    # Save the DataFrame to a CSV file
+    result_df.to_csv(f'/Data/Delong_BA_Data/scores/DRN_hyper_scores/hyperparameter_tuning_results_run{run}.csv', index=False)
 
     # Close the pool of worker processes
     pool.close()
-
-    # Call get() on each result to raise any exceptions
-    for result in results:
-        result.get()
-
-    # Wait for all processes to finish
     pool.join()
+
 
 
 

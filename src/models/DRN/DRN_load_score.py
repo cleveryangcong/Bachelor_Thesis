@@ -49,7 +49,7 @@ def DRN_load_hyper_score(var_name):
 
     path = "/Data/Delong_BA_Data/scores/DRN_hyper_scores/"
     # Create the file pattern based on the variable name
-    file_pattern = f'DRN_hyper_{var_name}_*_*.pkl'
+    file_pattern = f'DRN_hyper_{var_name}_*_*_run*.pkl'
 
     # List all files in the directory
     files = os.listdir(path)
