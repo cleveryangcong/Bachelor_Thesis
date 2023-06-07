@@ -156,14 +156,14 @@ def DRN_train_hyper(
 
 if __name__ == "__main__":
     # Create a pool of worker processes
-    pool = mp.Pool(10)
+    pool = mp.Pool(20)
 
     var_num = 2
     hidden_layers = [[]]
-    emb_size = [3]
-    epochs = [2]
-    batch_sizes = [4096, 8192]
-    lrs = [0.1, 0.01]
+    emb_size = [5, 10, 20]
+    epochs = [10]
+    batch_sizes = [512, 1024, 2048]
+    lrs = [0.1, 0.01, 0.001]
     optimizers = ['Adam']
     activation = ['relu']
     run = 0 #Always change this
