@@ -189,6 +189,15 @@ def load_max_mean_std_values_denorm():
     std_max = np.load("/Data/Delong_BA_Data/mean_std_max_values/denorm/std_max.npy")
     return mean_max, std_max
 
+def load_min_mean_std_values_denorm():
+    '''
+    load all min mean and std values to scale the denormed data with
+    '''
+    mean_min = np.load("/Data/Delong_BA_Data/mean_std_min_values/denorm/mean_min.npy")
+    std_min = np.load("/Data/Delong_BA_Data/mean_std_min_values/denorm/std_min.npy")
+    return mean_min, std_min
+
+
 
 
 
