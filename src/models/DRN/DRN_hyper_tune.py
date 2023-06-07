@@ -177,8 +177,8 @@ if __name__ == "__main__":
     async_results = []
 
     for lead_time in [0, 15, 30]:
-        for params in tqdm(combinations):
-            async_result = pool.apply_async(DRN_train_hyper, args=(var_num, lead_time, params[0], params[1], 15599, params[2], params[3], params[4],0.2,  params[5], params[6], True))
+        for params in combinations:
+            async_result = pool.apply_async(DRN_train_hyper, args=(var_num, lead_time, params[0], params[1], 15599, params[2], params[3], params[4],0.2,  params[5], params[6], False))
 
             async_results.append((lead_time, params, async_result))
 
