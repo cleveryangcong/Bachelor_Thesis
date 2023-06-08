@@ -77,34 +77,35 @@ def heatmap_t2m_ws10_lead_score(lead_time):
         f"/home/dchen/BA_CH_EN/reports/figures/heatmap_t2m_ws10_lead_{lead_time_real}_values.pdf"
     )
     plt.show()
+# Set up values for all functions below
+var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
+random.seed(7)
+# setup:
+ran_lat = random.randint(0, 119)
+ran_lon = random.randint(0, 129)
+ran_forecast_date = random.randint(0, 356)
+ran_lead_time = random.randint(0, 30)
+lead_times = [1, 15, 30]  # Lead times to plot boxplot with
+
+    # Raw Data:
+dat_raw = ldr.load_data_raw()
+
+# Processese Normed Data
+dat_train_norm = ldp.load_data_all_train_proc_norm()
+dat_test_norm = ldp.load_data_all_test_proc_norm()
+
+# Processese Denormed Data
+dat_train_denorm = ldpd.load_data_all_train_proc_denorm()
+dat_test_denorm = ldpd.load_data_all_test_proc_denorm()
+
+dat_arr_X = []
+dat_arr_y = []
+
+for i in range(5):
+    dat_arr_X.append(dat_raw[0].predictions.isel(var=i))
+    dat_arr_y.append(dat_raw[0].ground_truth.isel(var=i))
     
 def line_plots_lead_value_variables():
-    var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
-    random.seed(7)
-    # setup:
-    ran_lat = random.randint(0, 119)
-    ran_lon = random.randint(0, 129)
-    ran_forecast_date = random.randint(0, 356)
-    ran_lead_time = random.randint(0, 30)
-    lead_times = [1, 15, 30]  # Lead times to plot boxplot with
-    
-        # Raw Data:
-    dat_raw = ldr.load_data_raw()
-
-    # Processese Normed Data
-    dat_train_norm = ldp.load_data_all_train_proc_norm()
-    dat_test_norm = ldp.load_data_all_test_proc_norm()
-
-    # Processese Denormed Data
-    dat_train_denorm = ldpd.load_data_all_train_proc_denorm()
-    dat_test_denorm = ldpd.load_data_all_test_proc_denorm()
-    
-    dat_arr_X = []
-    dat_arr_y = []
-
-    for i in range(5):
-        dat_arr_X.append(dat_raw[0].predictions.isel(var=i))
-        dat_arr_y.append(dat_raw[0].ground_truth.isel(var=i))
 
     # Load means and stds
     means = np.load("/mnt/sda/Data2/fourcastnet/data/stats_v0/global_means.npy").flatten()[
@@ -179,4 +180,27 @@ def line_plots_lead_value_variables():
         axs[i].set_ylabel(labels[index])
     plt.tight_layout()
     plt.savefig('/home/dchen/BA_CH_EN/reports/figures/line_plot_lead_value_rest.pdf')  # save plot for remaining variables
+    plt.show()
+
+    
+def line_plot_lead_ensstd_all():
+    labels = [
+    "Wind Speed m/s",
+    "Wind Speed m/s",
+    "Temperature Kelvin",
+    "Temperature Kelvin",
+    "Geopotential m",
+    "Wind Speed m/s",
+    ]
+    fig, axs = plt.subplots(ncols=1, nrows=6, figsize=(10, 20))
+    for i in range(6):
+        dat_train_denorm[i][var_names[i] + "_train"].isel(
+            forecast_date=ran_forecast_date, lat=ran_lat, lon=ran_lon, mean_std=1
+        ).plot(x="lead_time", ax=axs[i])
+        axs[i].set_title(var_names[i] + " - lead time - ensemble std")
+        axs[i].set_ylabel(labels[i])
+    plt.tight_layout()
+    plt.savefig(
+        "/home/dchen/BA_CH_EN/reports/figures/line_plot_lead_ens-std_all.pdf"
+    )  # save plot for remaining variables
     plt.show()
