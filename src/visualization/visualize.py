@@ -73,7 +73,110 @@ def heatmap_t2m_ws10_lead_score(lead_time):
     fig.colorbar(im4, ax=ax4, shrink=0.5).set_label("Wind Speed in m/s")
 
     plt.tight_layout()
-    # plt.savefig(
-    #     f"/home/dchen/BA_CH_EN/src/visualization/heatmap_t2m_ws10_lead_{lead_time_real}_values.pdf"
-    # )
+    plt.savefig(
+        f"/home/dchen/BA_CH_EN/reports/figures/heatmap_t2m_ws10_lead_{lead_time_real}_values.pdf"
+    )
+    plt.show()
+    
+def line_plots_lead_value_variables():
+    var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
+    random.seed(7)
+    # setup:
+    ran_lat = random.randint(0, 119)
+    ran_lon = random.randint(0, 129)
+    ran_forecast_date = random.randint(0, 356)
+    ran_lead_time = random.randint(0, 30)
+    lead_times = [1, 15, 30]  # Lead times to plot boxplot with
+    
+        # Raw Data:
+    dat_raw = ldr.load_data_raw()
+
+    # Processese Normed Data
+    dat_train_norm = ldp.load_data_all_train_proc_norm()
+    dat_test_norm = ldp.load_data_all_test_proc_norm()
+
+    # Processese Denormed Data
+    dat_train_denorm = ldpd.load_data_all_train_proc_denorm()
+    dat_test_denorm = ldpd.load_data_all_test_proc_denorm()
+    
+    dat_arr_X = []
+    dat_arr_y = []
+
+    for i in range(5):
+        dat_arr_X.append(dat_raw[0].predictions.isel(var=i))
+        dat_arr_y.append(dat_raw[0].ground_truth.isel(var=i))
+
+    # Load means and stds
+    means = np.load("/mnt/sda/Data2/fourcastnet/data/stats_v0/global_means.npy").flatten()[
+        [0, 1, 2, 5, 14]
+    ]
+    stds = np.load("/mnt/sda/Data2/fourcastnet/data/stats_v0/global_stds.npy").flatten()[
+        [0, 1, 2, 5, 14]
+    ]
+
+    # Calculate ws10
+    u10_X = (
+        dat_arr_X[0].isel(forecast_date=ran_forecast_date, lat=ran_lat, lon=ran_lon)
+        * stds[0]
+        + means[0]
+    )
+    v10_X = (
+        dat_arr_X[1].isel(forecast_date=ran_forecast_date, lat=ran_lat, lon=ran_lon)
+        * stds[1]
+        + means[1]
+    )
+    u10_y = (
+        dat_arr_y[0].isel(forecast_date=ran_forecast_date, lat=ran_lat, lon=ran_lon)
+        * stds[0]
+        + means[0]
+    )
+    v10_y = (
+        dat_arr_y[1].isel(forecast_date=ran_forecast_date, lat=ran_lat, lon=ran_lon)
+        * stds[1]
+        + means[1]
+    )
+
+    ws10_X = np.sqrt(u10_X ** 2 + v10_X ** 2)
+    ws10_y = np.sqrt(u10_y ** 2 + v10_y ** 2)
+    
+    
+    labels = ['Wind Speed m/s','Wind Speed m/s', 'Temperature Kelvin', 'Temperature Kelvin', 'Geopotential m', 'Wind Speed m/s']
+    fig, axs = plt.subplots(ncols=1, nrows=2, figsize=(10, 8))
+
+    # Plot for the variable in position 2 and ws10
+    for i, index in enumerate([2]):
+        (dat_arr_X[index].isel(forecast_date=ran_forecast_date, lat=ran_lat, lon=ran_lon) * stds[index] + means[index]).plot(
+            x="lead_time", hue="ens", add_legend=False, ax=axs[i], color="black", alpha=0.5
+        )
+        (dat_arr_y[index].isel(forecast_date=ran_forecast_date, lat=ran_lat, lon=ran_lon) * stds[index] + means[index]).plot(
+            x="lead_time", ax=axs[i], color="red"
+        )
+        axs[i].set_title(var_names[index] + " - lead time - ensemble values")
+        axs[i].set_ylabel(labels[index])
+
+    # Plot for ws10
+    ws10_X.plot(x="lead_time", hue="ens", add_legend=False, ax=axs[1], color="black", alpha=0.5)
+    ws10_y.plot(x="lead_time", ax=axs[1], color="red")
+    axs[1].set_title("ws10 - lead time - ensemble values")
+    axs[1].set_ylabel(labels[5]) 
+
+    plt.tight_layout()
+    plt.savefig('/home/dchen/BA_CH_EN/reports/figures/line_plot_lead_value_t2m_ws10.pdf')  # save plot for variables in position 2 and ws10
+    plt.show()
+
+
+    fig, axs = plt.subplots(ncols=1, nrows=3, figsize=(10, 12))
+
+    # Plot for the remaining variables, excluding u10 and v10 as they were used to compute ws10
+    for i, index in enumerate([0, 3, 4]):
+        (dat_arr_X[index].isel(forecast_date=ran_forecast_date, lat=ran_lat, lon=ran_lon) * stds[index] + means[index]).plot(
+            x="lead_time", hue="ens", add_legend=False, ax=axs[i], color="black", alpha=0.5
+        )
+        (dat_arr_y[index].isel(forecast_date=ran_forecast_date, lat=ran_lat, lon=ran_lon) * stds[index] + means[index]).plot(
+            x="lead_time", ax=axs[i], color="red"
+        )
+        axs[i].set_title(var_names[index] + " - lead time - ensemble values")
+        axs[i].set_ylabel(labels[index])
+    plt.tight_layout()
+    plt.savefig('/home/dchen/BA_CH_EN/reports/figures/line_plot_lead_value_rest.pdf')  # save plot for remaining variables
     plt.show()
