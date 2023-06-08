@@ -160,10 +160,10 @@ if __name__ == "__main__":
 
     var_num = 2
     hidden_layers = [[]]
-    emb_size = [5, 10]
-    epochs = [3]
-    batch_sizes = [512, 1024]
-    lrs = [0.1, 0.01]
+    emb_size = [5, 10, 20]
+    epochs = [10]
+    batch_sizes = [512, 1024, 2048, 4096]
+    lrs = [0.1, 0.01, 0.001]
     optimizers = ['Adam']
     activation = ['relu']
     run = 0 #Always change this
@@ -175,12 +175,11 @@ if __name__ == "__main__":
     result_df = pd.DataFrame(columns=['lead_time', 'hidden_layer', 'emb_size', 'batch_size', 'epochs', 'lr', 'optimizer', 'activation', 'score'])
 
     async_results = []
-
     for lead_time in [0, 15, 30]:
         for params in combinations:
             async_result = pool.apply_async(DRN_train_hyper, args=(var_num, lead_time, params[0], params[1], 15599, params[2], params[3], params[4],0.2,  params[5], params[6], False))
-
             async_results.append((lead_time, params, async_result))
+
 
     # Wait for all processes to finish and collect results
     for lead_time, params, async_result in async_results:
