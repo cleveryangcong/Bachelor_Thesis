@@ -196,7 +196,7 @@ if __name__ == "__main__":
             'score': score}, ignore_index=True)
 
     # Save the DataFrame to a CSV file
-    result_df.to_csv(f'/Data/Delong_BA_Data/scores/DRN_hyper_scores/DRN_hyper_scores_dataframe_run_{run}.csv', index=False)
+    result_df.to_csv(f'/Data/Delong_BA_Data/scores/DRN_hyper_scores/DRN_hyper_scores_dataframe_{var_num}_run_{run}.csv', index=False)
 
     # Close the pool of worker processes
     pool.close()
