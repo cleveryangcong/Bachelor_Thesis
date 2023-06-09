@@ -134,7 +134,7 @@ def DRN_train(
         batch_size=batch_size,
         validation_split=validation_split,
         callbacks=callbacks,
-        verbose=1,
+        verbose=0,
     )
     
 def main(
@@ -165,7 +165,6 @@ def main(
         optimizer=optimizer,
         activation=activation,
         save=save,
-        verbose = 0
     )
     
 if __name__ == "__main__":
