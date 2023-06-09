@@ -17,6 +17,7 @@ from src.utils.data_split import *  # Splitting data into X and y
 from src.utils.drn_make_X_array import *  # Import make train array functions (make_X_array)
 from src.models.EMOS import *  # EMOS implementation
 from src.models.DRN.DRN_model import *  # DRN implementation
+from src.models.DRN.DRN_load_score import * # Load DRN scores
 from src.models.EMOS_global.EMOS_global_load_score import *  # Load EMOS_global_scores
 from src.models.EMOS_global.EMOS_global_load_model import *  # Load EMOS_global_models
 from src.models.EMOS_local.EMOS_local_load_score import *  # Load EMOS_local_scores
