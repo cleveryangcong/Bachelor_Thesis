@@ -205,3 +205,46 @@ def line_plot_lead_ensstd_all():
         "/home/dchen/BA_CH_EN/reports/figures/line_plot_lead_ens-std_all.pdf"
     )  # save plot for remaining variables
     plt.show()
+    
+    
+    
+def heatmap_t2m_ws10_std_lead_all_values():
+    lead_time_std = [1, 17, 29]
+    days_back = [0, 5, 7]
+    t2m_std_preds = []
+    ws10_std_preds = []
+
+    for count, lead in enumerate(lead_time_std):
+        t2m_std_preds.append(
+            dat_train_denorm[2].t2m_train.isel(
+                lead_time=lead, mean_std=1, forecast_date=lead - days_back[count],
+            )
+        )
+        ws10_std_preds.append(
+            dat_train_denorm[5].ws10_train.isel(
+                lead_time=lead, mean_std=1, forecast_date=lead - days_back[count],
+            )
+        )
+
+    fig = plt.figure(figsize=(20, 20))
+
+    # Create titles and labels for the two types of predictions
+    titles = {0: "Colormap: ensemble std t2m", 1: "Colormap: ensemble std ws10"}
+    labels = {0: "Temperature in Kelvin", 1: "Wind Speed in m/s"}
+    cmaps = {0: "inferno", 1: "viridis"}
+
+    # Loop over the three lead times
+    for j in range(3):
+        # Loop over the two types of predictions
+        for i, preds in enumerate([t2m_std_preds, ws10_std_preds]):
+            ax = fig.add_subplot(3, 2, 2 * j + i + 1)
+            im = ax.imshow(preds[j].values, cmap=cmaps[i])
+            ax.set_title(f"{titles[i]}, lead_time: {lead_time_std[j]}", fontsize=16)
+            cbar = fig.colorbar(im, ax=ax, shrink=0.5)
+            cbar.set_label(labels[i], size=14)
+            cbar.ax.tick_params(labelsize=12)
+    plt.tight_layout()
+    plt.savefig(
+        f"/home/dchen/BA_CH_EN/reports/figures/heatmap_t2m_ws10_std_lead_all_values.pdf"
+    )
+    plt.show()
