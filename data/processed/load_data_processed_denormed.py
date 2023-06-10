@@ -38,12 +38,12 @@ def load_data_all_train_proc_denorm(chunks=None):
 
 def load_data_all_train_val_proc_denorm():
     train_var_denormed = load_data_all_train_proc_denorm()
-    train_val_var_denormed = []
+    train_var_denormed_new = []
+    val_var_denormed_new = []
     for i in range(6):
-        train_val_var_denormed.append([])
-        train_val_var_denormed[i].append(train_var_denormed[i].isel(forecast_date=slice(0, 1429 - 357)))
-        train_val_var_denormed[i].append(train_var_denormed[i].isel(forecast_date=slice(1429 - 357, 1429)))
-    return train_val_var_denormed
+        train_var_denormed_new.append(train_var_denormed[i].isel(forecast_date=slice(0, 1429 - 357)))
+        val_var_denormed_new.append(train_var_denormed[i].isel(forecast_date=slice(1429 - 357, 1429)))
+    return train_var_denormed_new, val_var_denormed_new
 
 def load_data_t2m_ws10_train_proc_denorm():
     '''
