@@ -158,15 +158,15 @@ if __name__ == "__main__":
     # Create a pool of worker processes
     pool = mp.Pool(15)
 
-    var_num = 2
-    hidden_layers = [[]]
-    emb_size = [5, 10, 20]
-    epochs = [10]
-    batch_sizes = [512, 1024, 2048, 4096]
-    lrs = [0.1, 0.01, 0.001]
+    var_num = 5
+    hidden_layers = [[1024]]
+    emb_size = [10]
+    epochs = [10, 20 ,30]
+    batch_sizes = [2048]
+    lrs = [0.001]
     optimizers = ['Adam']
     activation = ['relu']
-    run = 0 #Always change this
+    run = 2 #Always change this
     
     # Combine the hyperparameters using itertools.product
     combinations = list(product(hidden_layers, emb_size, batch_sizes, epochs, lrs, optimizers, activation))
