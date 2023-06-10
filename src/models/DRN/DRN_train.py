@@ -136,6 +136,7 @@ def DRN_train(
         callbacks=callbacks,
         verbose=1,
     )
+    return drn_lead_model
     
 def main(
     var_num,
