@@ -89,8 +89,8 @@ def DRN_train_hyper(
     var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
 
     # Load all training data of each variable
-    train_var_denormed = (
-        ldpd.load_data_all_train_proc_denorm()
+    train_var_denormed, val_var_denormed = (
+        ldpd.load_data_all_train_val_proc_denorm()
     )
     
     # Split the loaded data into features (X) and target (y)
@@ -98,14 +98,30 @@ def DRN_train_hyper(
     dat_X_train_lead_all_denorm, dat_y_train_lead_all_denorm = split_var_lead(
         train_var_denormed
     )
+    
+    # Split the loaded data into features (X) and target (y)
+    # also adjusts for lead_time
+    dat_X_val_lead_all_denorm, dat_y_val_lead_all_denorm = split_var_lead(
+        val_var_denormed
+    )
 
     # Preprocess the features for Neural Network and scale them
     drn_X_train_lead_array, drn_embedding_train_lead_array = make_X_array(
         dat_X_train_lead_all_denorm, lead_time
     ) 
+    
+    # Preprocess the features for Neural Network and scale them
+    drn_X_val_lead_array, drn_embedding_val_lead_array = make_X_array(
+        dat_X_val_lead_all_denorm, lead_time
+    ) 
 
     # Reshape target values into a 1D array
     t2m_y_train = dat_y_train_lead_all_denorm[var_num][lead_time].values.flatten()
+    
+    
+    # Reshape target values into a 1D array
+    t2m_y_val = dat_y_val_lead_all_denorm[var_num][lead_time].values.flatten()
+
 
     # Build the DRN model with embedding
     drn_lead_model = build_emb_model(
@@ -147,9 +163,10 @@ def DRN_train_hyper(
         t2m_y_train,
         epochs=epochs,
         batch_size=batch_size,
-        validation_split=validation_split,
+        validation_data = ([drn_X_val_lead_array, drn_embedding_val_lead_array], t2m_y_val),
         callbacks=callbacks,
         verbose=0,
+        shuffle = False
     )
     
     return best_score_callback.get_best_score()
@@ -159,14 +176,14 @@ if __name__ == "__main__":
     pool = mp.Pool(15)
 
     var_num = 5
-    hidden_layers = [[1024]]
-    emb_size = [10]
-    epochs = [10, 20 ,30]
-    batch_sizes = [2048]
+    hidden_layers = [[64, 128, 256]]
+    emb_size = [5]
+    epochs = [30]
+    batch_sizes = [4096, 8192, 16384, 32768]
     lrs = [0.001]
     optimizers = ['Adam']
     activation = ['relu']
-    run = 2 #Always change this
+    run = 3 #Always change this
     
     # Combine the hyperparameters using itertools.product
     combinations = list(product(hidden_layers, emb_size, batch_sizes, epochs, lrs, optimizers, activation))
