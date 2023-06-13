@@ -12,7 +12,7 @@ import data.raw.load_data_raw as ldr
 import data.processed.load_data_processed as ldp
 import data.processed.load_data_processed_denormed as ldpd
 
-def main(var_num, truncated = False):
+def main(var_num, truncated = False, val = False):
     '''
     Args:
     var_num (integer): number between 0 - 5 for one of the variables
@@ -20,7 +20,11 @@ def main(var_num, truncated = False):
     None
     '''
     # Declare which dataset to use
-    dataframe =  ldpd.load_data_all_test_proc_denorm()[var_num]
+    if val:
+        _ ,dataframe =  ldpd.load_data_all_train_val_proc_denorm()[var_num]
+    else:
+        dataframe =  ldpd.load_data_all_test_proc_denorm()[var_num]
+    
     X_dataframe = dataframe[list(dataframe.data_vars.keys())[0]]
     y_dataframe = dataframe[list(dataframe.data_vars.keys())[1]]
     # Define a list of variable names. var_num is used to select the appropriate variable from this list.
@@ -46,7 +50,10 @@ def main(var_num, truncated = False):
                                   y_dataframe_lead.values).mean(axis = 0)
         
         # Save the calculated CRPS values as numpy files.
-        np.save(f"/Data/Delong_BA_Data/scores/crps_benchmark_scores/{var_name}_lead_{lead_time - 1}_scores.npy", crps_values)
+        if val:
+            np.save(f"/Data/Delong_BA_Data/scores/crps_benchmark_scores/{var_name}_lead_{lead_time - 1}_val_scores.npy", crps_values)
+        else:
+            np.save(f"/Data/Delong_BA_Data/scores/crps_benchmark_scores/{var_name}_lead_{lead_time - 1}_scores.npy", crps_values)
 
 if __name__ == "__main__":
     # Create the parser
@@ -55,7 +62,7 @@ if __name__ == "__main__":
     # Add the arguments
     parser.add_argument('var_num', type=int, help='Variable number between 0 and 5')
     parser.add_argument('--truncated', type=bool, default=False, help='Use truncated CRPS (default: False)')
-
+    parser.add_argument('--val', type=bool, default=False, help='Decide whether to make scores of validation set (default: False)')
     # Parse the arguments
     args = parser.parse_args()
 
