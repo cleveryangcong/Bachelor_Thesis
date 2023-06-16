@@ -10,6 +10,7 @@ import tqdm
 
 # Visualization
 import matplotlib.pyplot as plt
+from matplotlib import cm, colors
 
 # My Methods
 from src.utils.CRPS import *  # CRPS metrics
@@ -47,37 +48,68 @@ def heatmap_t2m_ws10_lead_score(lead_time):
     )
 
 
-    fig = plt.figure(figsize=(20, 20))
+
+    fig = plt.figure(figsize=(22, 22))
+
+    # Calculate color range for t2m
+    t2m_min = min(t2m_preds.min(), t2m_truth.min())
+    t2m_max = max(t2m_preds.max(), t2m_truth.max())
 
     # t2m_preds
     ax1 = fig.add_subplot(2, 2, 1)
-    im1 = ax1.imshow(t2m_preds.values, cmap="inferno")
-    ax1.set_title(f"Colormap temperature predictions, lead_time: {lead_time_real}")
-    fig.colorbar(im1, ax=ax1, shrink=0.5).set_label("Temperature in Kelvin")
+    im1 = ax1.imshow(t2m_preds.values, cmap="inferno", vmin=t2m_min, vmax=t2m_max)
+    ax1.set_title(
+        f"Colormap temperature predictions, lead time: {lead_time_hours}", size=20
+    )
 
     # t2m_truth
     ax2 = fig.add_subplot(2, 2, 2)
-    im2 = ax2.imshow(t2m_truth.values, cmap="inferno")
-    ax2.set_title("Colormap temperature truth")
-    fig.colorbar(im2, ax=ax2, shrink=0.5).set_label("Temperature in Kelvin")
+    im2 = ax2.imshow(t2m_truth.values, cmap="inferno", vmin=t2m_min, vmax=t2m_max)
+    ax2.set_title("Colormap temperature truth", size=20)
+
+    # Colorbar for t2m
+    cbar_ax_t2m = fig.add_axes(
+        [0.92, 0.52, 0.02, 0.37]
+    )  # You may need to adjust these numbers
+    norm_t2m = colors.Normalize(vmin=t2m_min, vmax=t2m_max)
+    cmap_t2m = cm.inferno
+    mappable_t2m = cm.ScalarMappable(norm=norm_t2m, cmap=cmap_t2m)
+    cbar_t2m = fig.colorbar(mappable_t2m, cax=cbar_ax_t2m)
+    cbar_t2m.set_label("Temperature in Kelvin", size=15)
+
+    # Calculate color range for ws10
+    ws10_min = min(ws10_preds.min(), ws10_truth.min())
+    ws10_max = max(ws10_preds.max(), ws10_truth.max())
 
     # ws10_preds
     ax3 = fig.add_subplot(2, 2, 3)
-    im3 = ax3.imshow(ws10_preds.values, cmap="viridis")
-    ax3.set_title(f"Colormap ws10 predictions, lead_time: {lead_time_real}")
-    fig.colorbar(im3, ax=ax3, shrink=0.5).set_label("Wind Speed in m/s")
+    im3 = ax3.imshow(ws10_preds.values, cmap="viridis", vmin=ws10_min, vmax=ws10_max)
+    ax3.set_title(f"Colormap ws10 predictions, lead time: {lead_time_hours}", size=20)
 
     # ws10_truth
     ax4 = fig.add_subplot(2, 2, 4)
-    im4 = ax4.imshow(ws10_truth.values, cmap="viridis")
-    ax4.set_title("Colormap ws10 truth")
-    fig.colorbar(im4, ax=ax4, shrink=0.5).set_label("Wind Speed in m/s")
+    im4 = ax4.imshow(ws10_truth.values, cmap="viridis", vmin=ws10_min, vmax=ws10_max)
+    ax4.set_title("Colormap ws10 truth", size=20)
 
-    plt.tight_layout()
+    # Colorbar for ws10
+    cbar_ax_ws10 = fig.add_axes(
+        [0.92, 0.11, 0.02, 0.37]
+    )  # You may need to adjust these numbers
+    norm_ws10 = colors.Normalize(vmin=ws10_min, vmax=ws10_max)
+    cmap_ws10 = cm.viridis
+    mappable_ws10 = cm.ScalarMappable(norm=norm_ws10, cmap=cmap_ws10)
+    cbar_ws10 = fig.colorbar(mappable_ws10, cax=cbar_ax_ws10)
+    cbar_ws10.set_label("Wind Speed in m/s", size=15)
+
+    ax1.tick_params(axis="both", which="major", labelsize=15)
+    ax2.tick_params(axis="both", which="major", labelsize=15)
+    ax3.tick_params(axis="both", which="major", labelsize=15)
+    ax4.tick_params(axis="both", which="major", labelsize=15)
     plt.savefig(
-        f"/home/dchen/BA_CH_EN/reports/figures/heatmap_t2m_ws10_lead_{lead_time_real}_values.pdf"
+        f"/home/dchen/BA_CH_EN/reports/figures/heatmap_t2m_ws10_lead_{lead_time_hours}_values.pdf"
     )
     plt.show()
+
 # Set up values for all functions below
 var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
 random.seed(7)
@@ -142,7 +174,7 @@ def line_plots_lead_value_variables():
     ws10_y = np.sqrt(u10_y ** 2 + v10_y ** 2)
     
     
-    labels = ['Wind Speed m/s','Wind Speed m/s', 'Temperature Kelvin', 'Temperature Kelvin', 'Geopotential m', 'Wind Speed m/s']
+    labels = ['Wind Speed in m/s','Wind Speed in m/s', 'Temperature in Kelvin', 'Temperature in Kelvin', 'Geopotential in m', 'Wind Speed in m/s']
     fig, axs = plt.subplots(ncols=1, nrows=2, figsize=(10, 8))
 
     # Plot for the variable in position 2 and ws10
@@ -153,56 +185,69 @@ def line_plots_lead_value_variables():
         (dat_arr_y[index].isel(forecast_date=ran_forecast_date, lat=ran_lat, lon=ran_lon) * stds[index] + means[index]).plot(
             x="lead_time", ax=axs[i], color="red"
         )
-        axs[i].set_title(var_names[index] + " - lead time - ensemble values")
+        axs[i].set_title(var_names[index] + " - lead time - ensemble values", size=15)
         axs[i].set_ylabel(labels[index])
+        axs[i].set_xlabel('lead time in hours') 
+        current_xticks = axs[i].get_xticks()
+        axs[i].set_xticklabels(current_xticks*6)
 
     # Plot for ws10
     ws10_X.plot(x="lead_time", hue="ens", add_legend=False, ax=axs[1], color="black", alpha=0.5)
     ws10_y.plot(x="lead_time", ax=axs[1], color="red")
     axs[1].set_title("ws10 - lead time - ensemble values")
     axs[1].set_ylabel(labels[5]) 
+    axs[1].set_xlabel('lead time in hours') 
+    current_xticks = axs[1].get_xticks()
+    axs[1].set_xticklabels(current_xticks*6)
 
     plt.tight_layout()
-    plt.savefig('/home/dchen/BA_CH_EN/reports/figures/line_plot_lead_value_t2m_ws10.pdf')  # save plot for variables in position 2 and ws10
+    plt.savefig('/home/dchen/BA_CH_EN/reports/figures/line_plot_lead_hours_value_t2m_ws10.pdf')  # save plot for variables in position 2 and ws10
     plt.show()
 
 
-    fig, axs = plt.subplots(ncols=1, nrows=3, figsize=(10, 12))
+    fig, axs = plt.subplots(ncols=1, nrows=4, figsize=(10, 12))
 
     # Plot for the remaining variables, excluding u10 and v10 as they were used to compute ws10
-    for i, index in enumerate([0, 3, 4]):
+    for i, index in enumerate([0, 1, 3, 4]):
         (dat_arr_X[index].isel(forecast_date=ran_forecast_date, lat=ran_lat, lon=ran_lon) * stds[index] + means[index]).plot(
             x="lead_time", hue="ens", add_legend=False, ax=axs[i], color="black", alpha=0.5
         )
         (dat_arr_y[index].isel(forecast_date=ran_forecast_date, lat=ran_lat, lon=ran_lon) * stds[index] + means[index]).plot(
             x="lead_time", ax=axs[i], color="red"
         )
-        axs[i].set_title(var_names[index] + " - lead time - ensemble values")
+        axs[i].set_title(var_names[index] + " - lead time - ensemble values", size=15)
         axs[i].set_ylabel(labels[index])
+        axs[i].set_xlabel('lead time in hours') 
+        current_xticks = axs[i].get_xticks()
+        axs[i].set_xticklabels(current_xticks*6)
     plt.tight_layout()
-    plt.savefig('/home/dchen/BA_CH_EN/reports/figures/line_plot_lead_value_rest.pdf')  # save plot for remaining variables
+    plt.savefig('/home/dchen/BA_CH_EN/reports/figures/line_plot_lead_hours_value_rest.pdf')  # save plot for remaining variables
     plt.show()
+
 
     
 def line_plot_lead_ensstd_all():
     labels = [
-    "Wind Speed m/s",
-    "Wind Speed m/s",
-    "Temperature Kelvin",
-    "Temperature Kelvin",
-    "Geopotential m",
-    "Wind Speed m/s",
+        "Wind Speed in m/s",
+        "Wind Speed in m/s",
+        "Temperature in Kelvin",
+        "Temperature in Kelvin",
+        "Geopotential in m",
+        "Wind Speed in m/s",
     ]
     fig, axs = plt.subplots(ncols=1, nrows=6, figsize=(10, 20))
     for i in range(6):
         dat_train_denorm[i][var_names[i] + "_train"].isel(
             forecast_date=ran_forecast_date, lat=ran_lat, lon=ran_lon, mean_std=1
         ).plot(x="lead_time", ax=axs[i])
-        axs[i].set_title(var_names[i] + " - lead time - ensemble std")
+        axs[i].set_title(var_names[i] + " - lead time - ensemble std", size=15)
         axs[i].set_ylabel(labels[i])
+        axs[i].set_xlabel("lead time in hours")
+        current_xticks = axs[i].get_xticks()
+        axs[i].set_xticklabels(current_xticks * 6)
     plt.tight_layout()
     plt.savefig(
-        "/home/dchen/BA_CH_EN/reports/figures/line_plot_lead_ens-std_all.pdf"
+        "/home/dchen/BA_CH_EN/reports/figures/line_plot_lead_hours_ens-std_all.pdf"
     )  # save plot for remaining variables
     plt.show()
     
@@ -211,6 +256,7 @@ def line_plot_lead_ensstd_all():
 def heatmap_t2m_ws10_std_lead_all_values():
     lead_time_std = [1, 17, 29]
     days_back = [0, 5, 7]
+    lead_time_hours = ["6h", "102h", "174h"]
     t2m_std_preds = []
     ws10_std_preds = []
 
@@ -226,10 +272,10 @@ def heatmap_t2m_ws10_std_lead_all_values():
             )
         )
 
-    fig = plt.figure(figsize=(20, 20))
+    fig = plt.figure(figsize=(22, 22))
 
     # Create titles and labels for the two types of predictions
-    titles = {0: "Colormap: ensemble std t2m", 1: "Colormap: ensemble std ws10"}
+    titles = {0: "Colormap ensemble std t2m", 1: "Colormap: ensemble std ws10"}
     labels = {0: "Temperature in Kelvin", 1: "Wind Speed in m/s"}
     cmaps = {0: "inferno", 1: "viridis"}
 
@@ -239,10 +285,11 @@ def heatmap_t2m_ws10_std_lead_all_values():
         for i, preds in enumerate([t2m_std_preds, ws10_std_preds]):
             ax = fig.add_subplot(3, 2, 2 * j + i + 1)
             im = ax.imshow(preds[j].values, cmap=cmaps[i])
-            ax.set_title(f"{titles[i]}, lead_time: {lead_time_std[j]}", fontsize=16)
-            cbar = fig.colorbar(im, ax=ax, shrink=0.5)
-            cbar.set_label(labels[i], size=14)
-            cbar.ax.tick_params(labelsize=12)
+            ax.set_title(f"{titles[i]}, lead time: {lead_time_hours[j]}", size=20)
+            cbar = fig.colorbar(im, ax=ax, shrink=1)
+            cbar.set_label(labels[i], size=15)
+            cbar.ax.tick_params(labelsize=15)
+            ax.tick_params(axis="both", which="major", labelsize=15)
     plt.tight_layout()
     plt.savefig(
         f"/home/dchen/BA_CH_EN/reports/figures/heatmap_t2m_ws10_std_lead_all_values.pdf"
