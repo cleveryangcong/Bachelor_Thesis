@@ -12,7 +12,7 @@ import data.raw.load_data_raw as ldr
 import data.processed.load_data_processed as ldp
 import data.processed.load_data_processed_denormed as ldpd
 
-def main(var_num, truncated = False, val = False):
+def main(var_num, truncated = True, val = True):
     '''
     Args:
     var_num (integer): number between 0 - 5 for one of the variables
@@ -21,7 +21,7 @@ def main(var_num, truncated = False, val = False):
     '''
     # Declare which dataset to use
     if val:
-        _ ,dataframe =  ldpd.load_data_all_train_val_proc_denorm()[var_num]
+        dataframe =  ldpd.load_data_all_train_val_proc_denorm()[1][var_num]
     else:
         dataframe =  ldpd.load_data_all_test_proc_denorm()[var_num]
     
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Call the main function
-    main(args.var_num, args.truncated)
+    main(args.var_num, args.truncated, args.val)
 
 
 
