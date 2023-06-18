@@ -61,8 +61,8 @@ if __name__ == "__main__":
 
     # Add the arguments
     parser.add_argument('var_num', type=int, help='Variable number between 0 and 5')
-    parser.add_argument('--truncated', type=bool, default=False, help='Use truncated CRPS (default: False)')
-    parser.add_argument('--val', type=bool, default=False, help='Decide whether to make scores of validation set (default: False)')
+    parser.add_argument('--truncated', action='store_true', help='Use truncated CRPS')
+    parser.add_argument('--val', action='store_false', help='Use validation set')
     # Parse the arguments
     args = parser.parse_args()
 
