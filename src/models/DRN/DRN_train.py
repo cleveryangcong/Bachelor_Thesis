@@ -177,7 +177,7 @@ if __name__ == "__main__":
     # Continue adding the arguments
     parser.add_argument('--max_id', type=int, default=15599, help='Maximum id number (default: 15599)')
     parser.add_argument('--activation', type=str, default='relu', help='Activation function to use (default: relu)')
-    parser.add_argument('--save', type=bool, default=True, help='Option to save the model (default: True)')
+    parser.add_argument('--save', action='store_false', help='Option to not save the model (default: model will be saved)')
     parser.add_argument('--hidden_layer', type=str, default="", help='Define hidden layer sizes as comma-separated integers (e.g., "64,128,64"). Default is an empty list.')
 
     parser.add_argument('--batch_size', type=int, default=4096, help='batch size to use (default: 4096)')
@@ -187,7 +187,7 @@ if __name__ == "__main__":
     parser.add_argument('--optimizer', type=str, default="Adam", help='Optimizer to use(default: Adam)')
     # Parse the arguments
     args = parser.parse_args()
-    
+
     # Create a pool of worker processes
     pool = mp.Pool(16)
 
