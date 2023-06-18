@@ -124,15 +124,16 @@ def main(
 if __name__ == "__main__":
     # Create the parser
     parser = argparse.ArgumentParser(description="Calculate CRPS for a given variable")
-
+    
     # Add the arguments
     parser.add_argument('var_num', type=int, help='Variable number between 0 and 5')
-    parser.add_argument('--batch_size', type=int, default=32, help='batch size to use (default: 4096)')
-    parser.add_argument('--epochs', type=int, default=30, help='Number of epochs (default: 10)')
-    parser.add_argument('--lr', type=float, default=0.01, help='learning rate (default: 0.001)')
+    parser.add_argument('--batch_size', type=int, default=32, help='batch size to use (default: 32)')
+    parser.add_argument('--epochs', type=int, default=30, help='Number of epochs (default: 30)')
+    parser.add_argument('--lr', type=float, default=0.01, help='learning rate (default: 0.01)')
     parser.add_argument('--validation_split', type=float, default=0.2, help='validation split(default: 0.2)')
     parser.add_argument('--optimizer', type=str, default="Adam", help='Optimizer to use(default: Adam)')
-    parser.add_argument('--save', type=bool, default=True, help='Whether to save model or not(default: Adam)')
+    parser.add_argument('--save', action='store_false', help='Whether to save model or not(default: True)')
+
     # Parse the arguments
     args = parser.parse_args()
     
