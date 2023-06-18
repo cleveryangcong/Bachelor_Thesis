@@ -90,12 +90,12 @@ def main():
             u10_year_date_truth = denormalize(
                 means[0],
                 stds[0],
-                dat_raw.ground_truth.isel(var=1, forecast_date=forecast_date),
+                dat_raw.ground_truth.isel(var=0, forecast_date=forecast_date),
             )
             v10_year_date_truth = denormalize(
                 means[1],
                 stds[1],
-                dat_raw.ground_truth.isel(var=0, forecast_date=forecast_date),
+                dat_raw.ground_truth.isel(var=1, forecast_date=forecast_date),
             )
 
             ws10_tru = np.hypot(u10_year_date_truth, v10_year_date_truth,)
