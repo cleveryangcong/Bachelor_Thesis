@@ -106,7 +106,7 @@ if __name__ == "__main__":
     results = []
 
     # Call the main function for each lead_time
-    for lead_time in [0, 14, 29]:
+    for lead_time in [0, 15, 30]:
         result = pool.apply_async(main, args=(args.var_num, lead_time))
         results.append(result)
     
