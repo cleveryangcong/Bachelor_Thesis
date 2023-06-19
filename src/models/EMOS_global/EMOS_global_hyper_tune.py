@@ -159,12 +159,12 @@ def EMOS_global_hyper_tune(var_num, lead_time, batch_sizes=[4096], epochs=[10], 
 def main():
     for i in [0, 15, 30]:
         var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
-        var_num = 2
+        var_num = 5
         lead_time = i
         epochs = [10]
         batch_sizes = [1024, 2048, 4096, 8192]
-        lrs = [0.1, 0.01, 0.001]
-        optimizers = ['Adam', 'SGD']
+        lrs = [0.01,0.005, 0.001]
+        optimizers = ['Adam']
         best_params, best_score, all_params, all_scores = EMOS_global_hyper_tune(var_num, lead_time, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers)
         best_parms_score = [best_params, best_score, lead_time, all_params, all_scores]
 
