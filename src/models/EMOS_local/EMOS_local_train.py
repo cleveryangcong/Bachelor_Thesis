@@ -58,18 +58,28 @@ def EMOS_local_train(var_num, lead_time, batch_size=32, epochs=30, lr=0.01, vali
     # Define the names of the variables
     var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
 
-    # Load the training data for gridpoint
-    train_var_denormed = ldpd.load_data_all_train_proc_denorm()[var_num]
+    # Load the training and validation data
+    train_all_denormed, val_all_denormed = ldpd.load_data_all_train_val_proc_denorm()
+    train_var_denormed = train_all_denormed[var_num]
+    val_var_denormed = val_all_denormed[var_num]
 
     # Split the data into features and target
     for lat in range(120):
         for lon in range(130):
-            # Split the data into features and target
+            # Split the train data into features and target
             X_train_var_denormed = train_var_denormed[
                 list(train_var_denormed.data_vars.keys())[0]
             ].isel(lead_time=lead_time, lat=lat, lon=lon)
             y_train_var_denormed = train_var_denormed[
                 list(train_var_denormed.data_vars.keys())[1]
+            ].isel(lead_time=lead_time, lat=lat, lon=lon)
+            
+            # Split the val data into features and target
+            X_val_var_denormed = val_var_denormed[
+                list(val_var_denormed.data_vars.keys())[0]
+            ].isel(lead_time=lead_time, lat=lat, lon=lon)
+            y_val_var_denormed = val_var_denormed[
+                list(val_var_denormed.data_vars.keys())[1]
             ].isel(lead_time=lead_time, lat=lat, lon=lon)
 
             # Build and compile the model
@@ -99,7 +109,10 @@ def EMOS_local_train(var_num, lead_time, batch_size=32, epochs=30, lr=0.01, vali
                 y_train_var_denormed.values.flatten(),
                 batch_size=batch_size,
                 epochs=epochs,
-                validation_split=validation_split,
+                validation_data=([
+                            X_val_var_denormed.isel(mean_std=0).values.flatten(),
+                            X_val_var_denormed.isel(mean_std=1).values.flatten(),
+                        ], y_val_var_denormed.values.flatten()),
                 callbacks=callbacks,
                 verbose=0
             )
