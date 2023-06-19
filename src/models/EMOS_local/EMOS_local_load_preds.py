@@ -2,14 +2,14 @@ import os
 import numpy as np
 import fnmatch
 
-def EMOS_global_load_preds(var_name):
+def EMOS_local_load_preds(var_name):
     '''
     Args:
         var_name (string): the variable name used in the numpy files
     Returns:
         list of numpy arrays
     '''
-    path = "/Data/Delong_BA_Data/preds/EMOS_global_preds/"
+    path = "/Data/Delong_BA_Data/preds/EMOS_local_preds/"
     # Create the file pattern based on the variable name
     file_pattern = f'EMOS_local_{var_name}_lead_*_preds.npy'
 
