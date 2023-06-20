@@ -173,17 +173,17 @@ def DRN_train_hyper(
 
 if __name__ == "__main__":
     # Create a pool of worker processes
-    pool = mp.Pool(15)
+    pool = mp.Pool(10)
 
     var_num = 5
-    hidden_layers = [[512],[1024], [64, 32]]
-    emb_size = [2, 10]
-    epochs = [10, 150]
-    batch_sizes = [64, 4096, 8192, 16384]
-    lrs = [0.0005, 0.002]
-    optimizers = ['SGD']
-    activation = ['relu', 'softplus']
-    run = 5 #Always change this
+    hidden_layers = [[256],[512], [64, 32]]
+    emb_size = [5, 10]
+    epochs = [30]
+    batch_sizes = [512, 1024, 2048]
+    lrs = [0.01, 0.005, 0.001]
+    optimizers = ['Adam']
+    activation = ['relu']
+    run = 0 #Always change this
     
     # Combine the hyperparameters using itertools.product
     combinations = list(product(hidden_layers, emb_size, batch_sizes, epochs, lrs, optimizers, activation))
