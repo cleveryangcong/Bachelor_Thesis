@@ -23,6 +23,6 @@ def DRN_load_preds(var_name):
     npy_files.sort(key=lambda file: int(file.split('_')[4]))
     
     # Load each .npy file and store it in a list
-    arrays = [np.load(os.path.join(path, file)).transpose((2, 0, 1, 3)) for file in npy_files]
+    arrays = [np.load(os.path.join(path, file)).reshape((357, 120, 130, 2)) for file in npy_files]
 
     return arrays
