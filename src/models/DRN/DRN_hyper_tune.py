@@ -176,14 +176,14 @@ if __name__ == "__main__":
     pool = mp.Pool(10)
 
     var_num = 5
-    hidden_layers = [[256],[512], [64, 32]]
-    emb_size = [5, 10]
+    hidden_layers = [[512], [1024], [64, 32], [256, 128]]
+    emb_size = [5]
     epochs = [30]
-    batch_sizes = [512, 1024, 2048]
-    lrs = [0.01, 0.005, 0.001]
+    batch_sizes = [2048, 4096, 8192]
+    lrs = [0.005, 0.001, 0.0005]
     optimizers = ['Adam']
     activation = ['relu']
-    run = 0 #Always change this
+    run = 1 #Always change this
     
     # Combine the hyperparameters using itertools.product
     combinations = list(product(hidden_layers, emb_size, batch_sizes, epochs, lrs, optimizers, activation))
