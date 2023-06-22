@@ -183,7 +183,7 @@ if __name__ == "__main__":
     lrs = [0.001, 0.0005, 0.0001, 0.00005, 0.00001]
     optimizers = ['Adam']
     activation = ['relu']
-    run = 1 #Always change this
+    run = 2 #Always change this
     
     # Combine the hyperparameters using itertools.product
     combinations = list(product(hidden_layers, emb_size, batch_sizes, epochs, lrs, optimizers, activation))
