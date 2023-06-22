@@ -139,7 +139,7 @@ def DRN_train_hyper(
 
     # Define callbacks for early stopping
     early_stopping = EarlyStopping(
-        monitor="val_loss", patience=3
+        monitor="val_loss", patience=2
     )
     best_score_callback = BestScoreCallback()
     callbacks = [early_stopping, best_score_callback]
@@ -176,11 +176,11 @@ if __name__ == "__main__":
     pool = mp.Pool(10)
 
     var_num = 5
-    hidden_layers = [[512], [1024], [64, 32], [256, 128]]
+    hidden_layers = [[512]]
     emb_size = [5]
-    epochs = [30]
-    batch_sizes = [2048, 4096, 8192]
-    lrs = [0.005, 0.001, 0.0005]
+    epochs = [70]
+    batch_sizes = [8192, 16384, 32768]
+    lrs = [0.001, 0.0005, 0.0001, 0.00005, 0.00001]
     optimizers = ['Adam']
     activation = ['relu']
     run = 1 #Always change this
