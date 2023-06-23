@@ -83,78 +83,78 @@ class Unet:
             if self.call_back == False:
                 self.ep = 30
 
-def build_model(self, dg_train_shape, dg_train_weight_target=None):
-    """
-    This function builds a U-Net model given the shape of training data and optional weights for the loss function.
+    def build_model(self, dg_train_shape, dg_train_weight_target=None):
+        """
+        This function builds a U-Net model given the shape of training data and optional weights for the loss function.
 
-    Args:
-        dg_train_shape (tuple): A tuple that specifies the shape of the training data.
-        dg_train_weight_target (tuple): A tuple containing arrays of the same shape as the training target 
-                                         data and the weight for each pixel in the target. 
-                                         Default is None, in which case no weighting is used for the loss.
+        Args:
+            dg_train_shape (tuple): A tuple that specifies the shape of the training data.
+            dg_train_weight_target (tuple): A tuple containing arrays of the same shape as the training target 
+                                             data and the weight for each pixel in the target. 
+                                             Default is None, in which case no weighting is used for the loss.
 
-    Returns:
-        cnn (Model): A Keras model object representing the U-Net.
-    """
+        Returns:
+            cnn (Model): A Keras model object representing the U-Net.
+        """
 
-    # Define the shape of the input tensor
-    inp_imgs = Input(shape=(dg_train_shape[1], dg_train_shape[2], dg_train_shape[3],))
+        # Define the shape of the input tensor
+        inp_imgs = Input(shape=(dg_train_shape[1], dg_train_shape[2], dg_train_shape[3],))
 
-    # Save input tensor as c0
-    c0 = inp_imgs
+        # Save input tensor as c0
+        c0 = inp_imgs
 
-    # Encoder / contracting path: series of convolutional and pooling layers
-    p1, c1 = down(c0, self.filters*4, activation='elu', padding='same', bn=self.bn, apool=self.apool)  # 16
-    p2, c2 = down(p1, self.filters*8, activation='elu', padding='same', bn=self.bn, apool=self.apool)  # 8
-    p3, c3 = down(p2, self.filters*16, activation='elu', padding='same', bn=self.bn, apool=self.apool)  # 4
-    # If n_blocks is 4 or greater, add another layer
-    p4, c4 = down(p3, self.filters*32, activation='elu', padding='same', bn=self.bn, apool=self.apool) if (self.n_blocks >= 4) else [p3, c3]
-    # If n_blocks is 5 or greater, add another layer
-    p5, c5 = down(p4, self.filters*64, activation='elu', padding='same', bn=self.bn, apool=self.apool) if (self.n_blocks >= 5) else [p4, c4]
+        # Encoder / contracting path: series of convolutional and pooling layers
+        p1, c1 = down(c0, self.filters*4, activation='elu', padding='same', bn=self.bn, apool=self.apool)  # 16
+        p2, c2 = down(p1, self.filters*8, activation='elu', padding='same', bn=self.bn, apool=self.apool)  # 8
+        p3, c3 = down(p2, self.filters*16, activation='elu', padding='same', bn=self.bn, apool=self.apool)  # 4
+        # If n_blocks is 4 or greater, add another layer
+        p4, c4 = down(p3, self.filters*32, activation='elu', padding='same', bn=self.bn, apool=self.apool) if (self.n_blocks >= 4) else [p3, c3]
+        # If n_blocks is 5 or greater, add another layer
+        p5, c5 = down(p4, self.filters*64, activation='elu', padding='same', bn=self.bn, apool=self.apool) if (self.n_blocks >= 5) else [p4, c4]
 
-    # Bottleneck: two convolution layers
-    cb = Conv2D(self.filters*4*2**self.n_blocks, (3, 3), activation='elu', padding='same')(p5)
-    cb = Conv2D(self.filters*4*2**self.n_blocks, (3, 3), activation='elu', padding='same')(cb)
-    # Add batch normalization if specified
-    cb = BatchNormalization()(cb) if self.bn else cb
+        # Bottleneck: two convolution layers
+        cb = Conv2D(self.filters*4*2**self.n_blocks, (3, 3), activation='elu', padding='same')(p5)
+        cb = Conv2D(self.filters*4*2**self.n_blocks, (3, 3), activation='elu', padding='same')(cb)
+        # Add batch normalization if specified
+        cb = BatchNormalization()(cb) if self.bn else cb
 
-    # Decoder / expanding path: series of convolutional and transpose convolutional layers to upsample back to the original image size
-    u5 = up(cb, c5, self.filters*64, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn) if (self.n_blocks >=5 ) else cb
-    u4 = up(u5, c4, self.filters*32, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn) if (self.n_blocks >=4 ) else cb
-    u3 = up(u4, c3, self.filters*16, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn)
-    u2 = up(u3, c2, self.filters*8, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn)
-    u1 = up(u2, c1, self.filters*4, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=False)  # no normalization directly before softmax
+        # Decoder / expanding path: series of convolutional and transpose convolutional layers to upsample back to the original image size
+        u5 = up(cb, c5, self.filters*64, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn) if (self.n_blocks >=5 ) else cb
+        u4 = up(u5, c4, self.filters*32, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn) if (self.n_blocks >=4 ) else cb
+        u3 = up(u4, c3, self.filters*16, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn)
+        u2 = up(u3, c2, self.filters*8, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn)
+        u1 = up(u2, c1, self.filters*4, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=False)  # no normalization directly before softmax
 
-    # Apply a softmax activation function to the last layer
-    out = Conv2D(3, (1, 1), activation='softmax')(u1)
+        # Apply a softmax activation function to the last layer
+        out = Conv2D(3, (1, 1), activation='softmax')(u1)
 
-    # Crop the output to remove patch edges, depending on the region and whether training is done on patches
-    if self.train_patches == True:
-        out = Cropping2D(cropping=((4, 4), (4, 4)))(out)
-    else:
-        if self.region == 'europe':
-            out = Cropping2D(cropping=((8, 8), (8, 8)))(out)
-        if self.region == 'global':
-            out = Cropping2D(cropping=((8, 8), (4, 3)))(out)
+        # Crop the output to remove patch edges, depending on the region and whether training is done on patches
+        if self.train_patches == True:
+            out = Cropping2D(cropping=((4, 4), (4, 4)))(out)
+        else:
+            if self.region == 'europe':
+                out = Cropping2D(cropping=((8, 8), (8, 8)))(out)
+            if self.region == 'global':
+                out = Cropping2D(cropping=((8, 8), (4, 3)))(out)
 
-    # If training on patches and using a weighted loss, build the model with additional inputs for the weights and targets
-    if (self.train_patches == True) & (self.weighted_loss == True):
-        weight_shape = dg_train_weight_target[0]
-        weights = Input(shape=(weight_shape[1], weight_shape[2],))
-        target_shape = dg_train_weight_target[1]
-        target = Input(shape=(target_shape[1], target_shape[2], target_shape[3],))
-        inputs = [inp_imgs]
+        # If training on patches and using a weighted loss, build the model with additional inputs for the weights and targets
+        if (self.train_patches == True) & (self.weighted_loss == True):
+            weight_shape = dg_train_weight_target[0]
+            weights = Input(shape=(weight_shape[1], weight_shape[2],))
+            target_shape = dg_train_weight_target[1]
+            target = Input(shape=(target_shape[1], target_shape[2], target_shape[3],))
+            inputs = [inp_imgs]
 
-        cnn = Model(inputs=[inputs] + [weights, target], outputs=out)
+            cnn = Model(inputs=[inputs] + [weights, target], outputs=out)
 
-        cnn.target = target
-        cnn.weight_mask = weights
-        cnn.out = out
-    else:
-        cnn = Model(inputs=[inp_imgs], outputs=out)
+            cnn.target = target
+            cnn.weight_mask = weights
+            cnn.out = out
+        else:
+            cnn = Model(inputs=[inp_imgs], outputs=out)
 
-    # Return the final model
-    return cnn
+        # Return the final model
+        return cnn
 
 
 
