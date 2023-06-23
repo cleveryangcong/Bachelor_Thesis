@@ -14,8 +14,6 @@ warnings.simplefilter("ignore")  # Suppress warning messages
 
 
 class Unet:
-
-class Unet:
     # Initialize the class
     def __init__(self, v, train_patches, weighted_loss=False):
         """
