@@ -152,7 +152,7 @@ class Unet:
         # Apply a linear activation function to the second to last layer for the mean
         mean = Conv2D(1, (1, 1), activation='linear')(u1)
 
-        # Apply a softplus activation function to the second to last layer for the std dev
+        # Apply a softplus activation function to the second to last layer for the std dev, (always positive)
         stddev = Conv2D(1, (1, 1), activation='softplus')(u1)
 
         # Concatenate the mean and std dev layers along the channel dimension
@@ -165,7 +165,7 @@ class Unet:
         if var_num == 5:
             crps = crps_cost_function_trunc
         else:
-            crps = crps_cost_function
+            crps = crps_cost_function_U
         cnn.compile(optimizer='adam', loss=crps)
 
         return cnn
@@ -248,3 +248,37 @@ def up(u, c, filters, ct_kernel, ct_stride, activation='elu',
     u = BatchNormalization()(u) if bn else u
 
     return u
+
+
+def crps_cost_function_U(y_true, y_pred):
+    """Compute the CRPS cost function for a normal distribution defined by
+    the mean and standard deviation.
+
+    Code inspired by Kai Polsterer (HITS).
+
+    Args:
+        y_true: True values
+        y_pred: Tensor containing predictions: [mean, std]
+
+    Returns:
+        mean_crps: Scalar with mean CRPS over batch
+    """
+
+    # Split input
+    mu = y_pred[..., 0]
+    sigma = y_pred[..., 1]
+
+    # To stop sigma from becoming negative we first have to convert it the the variance and then take the square root again.
+    var = K.square(sigma)
+    # The following three variables are just for convenience
+    loc = (y_true - mu) / K.sqrt(var)
+    phi = 1.0 / np.sqrt(2.0 * np.pi) * K.exp(-K.square(loc) / 2.0)
+    Phi = 0.5 * (1.0 + tf.math.erf(loc / np.sqrt(2.0)))
+    # First we will compute the crps for each input/target pair
+    crps =  K.sqrt(var) * (loc * (2. * Phi - 1.) + 2 * phi - 1. / np.sqrt(np.pi))
+    # Then we take the mean. The cost is now a scalar
+
+    return K.mean(crps)
+
+
+
