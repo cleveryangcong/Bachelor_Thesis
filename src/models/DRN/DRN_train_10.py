@@ -22,7 +22,7 @@ from src.utils.CRPS import *  # CRPS metrics
 from src.utils.data_split import *  # Splitting data into X and y
 from src.utils.drn_make_X_array import *  # Import make train array functions (make_X_array)
 from src.models.EMOS import *  # EMOS implementation
-from src.models.DRN.DRN_model_random import *  # DRN implementation
+from src.models.DRN.DRN_mode import *  # DRN implementation
 from src.models.EMOS_global.EMOS_global_load_score import *  # Load EMOS_global_scores
 from src.models.EMOS_global.EMOS_global_load_model import *  # Load EMOS_global_models
 import data.raw.load_data_raw as ldr  # Load raw data
@@ -95,7 +95,7 @@ def DRN_train(
     t2m_y_train = dat_y_train_lead_all_denorm[var_num][lead_time].values.flatten()
 
     # Build the DRN model with embedding
-    drn_lead_model = build_emb_model_random(
+    drn_lead_model = build_emb_model(
         12,
         2,
         hidden_layer,
