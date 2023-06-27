@@ -89,7 +89,7 @@ def DRN_predict_evaluate(var_num, lead_time):
         
         # DRN Model predictions:
         DRN_preds.append(DRN_model.predict([drn_X_test_lead_array, drn_embedding_test_lead_array]))
-    DRN_preds_average = np.mean(np.abs(DRN_preds, axis = 0))
+    DRN_preds_average = np.mean(np.abs(DRN_preds), axis = 0)
     model_filename_preds = f"/Data/Delong_BA_Data/preds/DRN_preds_10/DRN_{var_names[var_num]}_lead_time_{lead_time}_preds.npy"
     np.save(model_filename_preds, DRN_preds_average)
     # DRN Model scores
