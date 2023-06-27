@@ -163,7 +163,7 @@ class Unet:
 
         # Compile the model with your custom loss
         if var_num == 5:
-            crps = crps_cost_function_trunc
+            crps = crps_cost_function_trunc_U
         else:
             crps = crps_cost_function_U
         cnn.compile(optimizer='adam', loss=crps)
@@ -278,6 +278,29 @@ def crps_cost_function_U(y_true, y_pred):
     crps =  K.sqrt(var) * (loc * (2. * Phi - 1.) + 2 * phi - 1. / np.sqrt(np.pi))
     # Then we take the mean. The cost is now a scalar
 
+    return K.mean(crps)
+
+def crps_cost_function_trunc_U(y_true, y_pred):
+    '''
+    Crps cost function truncated for normal distributions
+    '''
+    # Split input
+    mu = y_pred[..., 0]
+    sigma = y_pred[..., 1]
+
+    var = K.square(sigma)
+    loc = (y_true - mu) / K.sqrt(var)
+    
+    phi = 1.0 / np.sqrt(2.0 * np.pi) * K.exp(-K.square(loc) / 2.0)
+    
+    Phi_ms = 0.5 * (1.0 + tf.math.erf(mu/sigma / np.sqrt(2.0)))
+    Phi = 0.5 * (1.0 + tf.math.erf(loc / np.sqrt(2.0)))
+    Phi_2ms = 0.5 * (1.0 + tf.math.erf(np.sqrt(2)*mu/sigma / np.sqrt(2.0)))
+    
+    crps = K.sqrt(var) / K.square( Phi_ms ) * (
+            loc * Phi_ms * (2.0 * Phi + Phi_ms - 2.0)
+            + 2.0 * phi * Phi_ms - 1.0 / np.sqrt(np.pi) * Phi_2ms
+        )
     return K.mean(crps)
 
 
