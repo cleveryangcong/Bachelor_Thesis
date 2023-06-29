@@ -75,10 +75,11 @@ def DRN_train(
 
     # Define the names of the variables
     var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
-
+    
+    chunks = {'forecast_date': 10}
     # Load all training data of each variable
     train_var_denormed = (
-        ldpd.load_data_all_train_proc_denorm()
+        ldpd.load_data_all_train_proc_denorm(chunks = chunks)
     )
     
     # Split the loaded data into features (X) and target (y)

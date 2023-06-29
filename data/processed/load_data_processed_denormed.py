@@ -10,6 +10,8 @@ def load_data_all_train_proc_denorm(chunks=None):
         list: processed dataset of train variables from 2018 - 2021 
               order_var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
     """
+    if chunks != None:
+        chunks_ws10 = {'phony_dim_0':10}
     # Load all data with chunks
     path = "/Data/Delong_BA_Data/mean_ens_std_denorm/"
     dat_train_u10 = xr.open_dataset(path + "u10_train_denorm.h5", chunks=chunks)
@@ -17,7 +19,7 @@ def load_data_all_train_proc_denorm(chunks=None):
     dat_train_t2m = xr.open_dataset(path + "t2m_train_denorm.h5", chunks=chunks)
     dat_train_t850 = xr.open_dataset(path + "t850_train_denorm.h5", chunks=chunks)
     dat_train_z500 = xr.open_dataset(path + "z500_train_denorm.h5", chunks=chunks)
-    dat_train_ws10 = xr.open_dataset(path + "ws10_train_denorm.h5", chunks=chunks).rename_dims({
+    dat_train_ws10 = xr.open_dataset(path + "ws10_train_denorm.h5", chunks=chunks_ws10).rename_dims({
         "phony_dim_0": "forecast_date",
         "phony_dim_1": "lead_time",
         "phony_dim_2": "lat",
