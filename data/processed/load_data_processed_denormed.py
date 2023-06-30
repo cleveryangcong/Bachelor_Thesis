@@ -10,6 +10,7 @@ def load_data_all_train_proc_denorm(chunks=None):
         list: processed dataset of train variables from 2018 - 2021 
               order_var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
     """
+    chunks_ws10 = None
     if chunks != None:
         chunks_ws10 = {'phony_dim_0':10}
     # Load all data with chunks
