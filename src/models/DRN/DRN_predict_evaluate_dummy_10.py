@@ -91,7 +91,7 @@ def DRN_predict_evaluate(var_num, lead_time):
     DRN_preds = []
     # Load the trained model to use:
     for count in range(10):
-        path = f'/Data/Delong_BA_Data/models/DRN_10_dummy/DRN_{var_names[var_num]}_lead_time_{lead_time}_{count}_denormed.h5'
+        path = f'/Data/Delong_BA_Data/models/DRN_10_dummy/DRN_{var_names[var_num]}_lead_time_{lead_time}_{count}_denormed_dummy.h5'
         DRN_model = tf.keras.models.load_model(path, custom_objects={
                     "crps_cost_function": crps_cost_function,
                     "crps_cost_function_trunc": crps_cost_function_trunc,
