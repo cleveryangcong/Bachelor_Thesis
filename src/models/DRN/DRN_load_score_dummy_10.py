@@ -10,9 +10,9 @@ def DRN_load_score_dummy_10(var_name):
     Returns:
         list of numpy arrays
     '''
-    path = "/Data/Delong_BA_Data/scores/DRN_scores_dummy_10/"
+    path = "/Data/Delong_BA_Data/scores/DRN_scores_10_dummy/"
     # Create the file pattern based on the variable name
-    file_pattern = f'DRN_{var_name}_lead_time_*_dummy_scores.npy'
+    file_pattern = f'DRN_{var_name}_lead_time_*_scores.npy'
 
     # List all files in the directory
     files = os.listdir(path)
