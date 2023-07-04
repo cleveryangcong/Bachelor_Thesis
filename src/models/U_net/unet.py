@@ -2,7 +2,9 @@
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, AveragePooling2D, Conv2DTranspose
 from tensorflow.keras.layers import Concatenate, BatchNormalization, Dropout, Cropping2D
+from tensorflow import keras
 from keras.layers import concatenate
+import tensorflow as tf
 
 from tensorflow.keras.regularizers import l2
 from src.utils.CRPS import *  # CRPS metrics
@@ -18,7 +20,7 @@ warnings.simplefilter("ignore")  # Suppress warning messages
 
 class Unet:
     # Initialize the class
-    def __init__(self, v, train_patches, weighted_loss=False):
+    def __init__(self, v, train_patches, filters, weighted_loss=False):
         """
         Constructor for the Unet model class.
 
@@ -50,9 +52,9 @@ class Unet:
         self.region = 'europe'  # 'europe'
 
         # params for model architecture
-        self.filters = 2
+        self.filters = filters
         self.apool = True  # choose between average and max pooling, True = average
-        self.n_blocks = 3  # 4  # 5
+        self.n_blocks = 4  # 4  # 5
         self.bn = True  # batch normalization
         self.ct_kernel = (3, 3)  # (2, 2)
         self.ct_stride = (2, 2)  # (2, 2)
@@ -86,7 +88,7 @@ class Unet:
             if self.call_back == False:
                 self.ep = 30
 
-    def build_model(self, dg_train_shape,var_num, dg_train_weight_target=None):
+    def build_model(self, dg_train_shape,var_num, learning_rate = 0.001, dg_train_weight_target=None):
         """
         This function builds a U-Net model given the shape of training data and optional weights for the loss function.
 
@@ -166,7 +168,9 @@ class Unet:
             crps = crps_cost_function_trunc_U
         else:
             crps = crps_cost_function_U
-        cnn.compile(optimizer='adam', loss=crps)
+            
+        opt = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+        cnn.compile(optimizer=opt, loss=crps)
 
         return cnn
 
@@ -249,7 +253,6 @@ def up(u, c, filters, ct_kernel, ct_stride, activation='elu',
 
     return u
 
-
 def crps_cost_function_U(y_true, y_pred):
     """Compute the CRPS cost function for a normal distribution defined by
     the mean and standard deviation.
@@ -268,17 +271,47 @@ def crps_cost_function_U(y_true, y_pred):
     mu = y_pred[..., 0]
     sigma = y_pred[..., 1]
 
+    # Check for NaNs/Infs in mu and sigma
+    mu = tf.debugging.check_numerics(mu, "mu has NaN or Inf")
+    sigma = tf.debugging.check_numerics(sigma, "sigma has NaN or Inf")
+
     # To stop sigma from becoming negative we first have to convert it the the variance and then take the square root again.
     var = K.square(sigma)
-    # The following three variables are just for convenience
+
+    # Use softplus to ensure variance is always positive
+    var = tf.keras.activations.softplus(var)
+
+    # Check for NaNs/Infs in variance
+    var = tf.debugging.check_numerics(var, "Variance has NaN or Inf")
+
+    epsilon = 1e-10  # Replace with your small epsilon value
+
+    if tf.reduce_any(var == 0):
+        print('Var equals 0')
+        var = tf.where(var==0, epsilon, var)
+
     loc = (y_true - mu) / K.sqrt(var)
+
+    # Check for NaNs/Infs in loc
+    loc = tf.debugging.check_numerics(loc, "loc has NaN or Inf")
+
     phi = 1.0 / np.sqrt(2.0 * np.pi) * K.exp(-K.square(loc) / 2.0)
+
+    # Check for NaNs/Infs in phi
+    phi = tf.debugging.check_numerics(phi, "phi has NaN or Inf")
+
     Phi = 0.5 * (1.0 + tf.math.erf(loc / np.sqrt(2.0)))
-    # First we will compute the crps for each input/target pair
+
+    # Check for NaNs/Infs in Phi
+    Phi = tf.debugging.check_numerics(Phi, "Phi has NaN or Inf")
+
     crps =  K.sqrt(var) * (loc * (2. * Phi - 1.) + 2 * phi - 1. / np.sqrt(np.pi))
-    # Then we take the mean. The cost is now a scalar
+
+    # Check for NaNs/Infs in crps
+    crps = tf.debugging.check_numerics(crps, "crps has NaN or Inf")
 
     return K.mean(crps)
+
 
 def crps_cost_function_trunc_U(y_true, y_pred):
     '''
@@ -290,6 +323,12 @@ def crps_cost_function_trunc_U(y_true, y_pred):
 
     var = K.square(sigma)
     loc = (y_true - mu) / K.sqrt(var)
+    
+    epsilon = 1e-10  # Replace with your small epsilon value
+
+    if tf.reduce_any(var == 0):
+        print('Var equals 0')
+        var = tf.where(var==0, epsilon, var)
     
     phi = 1.0 / np.sqrt(2.0 * np.pi) * K.exp(-K.square(loc) / 2.0)
     
