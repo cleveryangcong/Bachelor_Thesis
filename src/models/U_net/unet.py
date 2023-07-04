@@ -20,7 +20,7 @@ warnings.simplefilter("ignore")  # Suppress warning messages
 
 class Unet:
     # Initialize the class
-    def __init__(self, v, train_patches, weighted_loss=False):
+    def __init__(self, v, train_patches, filters, weighted_loss=False):
         """
         Constructor for the Unet model class.
 
@@ -52,7 +52,7 @@ class Unet:
         self.region = 'europe'  # 'europe'
 
         # params for model architecture
-        self.filters = 16
+        self.filters = filters
         self.apool = True  # choose between average and max pooling, True = average
         self.n_blocks = 4  # 4  # 5
         self.bn = True  # batch normalization
