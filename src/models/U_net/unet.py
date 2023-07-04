@@ -103,13 +103,18 @@ class Unet:
         """
 
         # Define the shape of the input tensor
-        inp_mean = Input(shape=(dg_train_shape[1], dg_train_shape[2], dg_train_shape[3],))
-        inp_std = Input(shape=(dg_train_shape[1], dg_train_shape[2], dg_train_shape[3],))
-        
-        # Combine the two input tensors along the channel dimension
-        inp_imgs = concatenate([inp_mean, inp_std], axis=-1)
+        inp_means = [Input(shape=(dg_train_shape[1], dg_train_shape[2], dg_train_shape[3],)) for _ in range(6)]
+        inp_stds = [Input(shape=(dg_train_shape[1], dg_train_shape[2], dg_train_shape[3],)) for _ in range(6)]
+        inp_mask = Input(shape=(dg_train_shape[1], dg_train_shape[2]))
 
-        # Save input tensor as c0
+        # The mask input will be broadcasted along the time dimension to match the shapes of the other inputs.
+        # Use the tf.expand_dims function to add an extra dimension to the mask tensor, 
+        # then use tf.broadcast_to to make its shape match that of the other input tensors.
+        inp_mask_broadcasted = tf.broadcast_to(tf.expand_dims(inp_mask, axis=-1), tf.shape(inp_means[0]))
+
+        # Combine all the input tensors along the channel dimension
+        inp_imgs = concatenate(inp_means + inp_stds + [inp_mask_broadcasted], axis=-1)
+            # Save input tensor as c0
         c0 = inp_imgs
 
         # Encoder / contracting path: series of convolutional and pooling layers
@@ -161,7 +166,7 @@ class Unet:
         out = concatenate([mean, stddev], axis=-1)
 
         # Finish building the model
-        cnn = Model(inputs=[inp_mean, inp_std], outputs=out)
+        cnn = Model(inputs=inp_means + inp_stds + [inp_mask], outputs=out)
 
         # Compile the model with your custom loss
         if var_num == 5:
