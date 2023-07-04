@@ -52,7 +52,7 @@ class Unet:
         self.region = 'europe'  # 'europe'
 
         # params for model architecture
-        self.filters = 4
+        self.filters = 16
         self.apool = True  # choose between average and max pooling, True = average
         self.n_blocks = 4  # 4  # 5
         self.bn = True  # batch normalization
