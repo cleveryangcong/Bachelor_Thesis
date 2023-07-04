@@ -29,6 +29,19 @@ from src.models.U_net.unet import Unet
 from src.models.U_net.u_net_load_data import *
 
 
+def pad_land_sea_mask(land_sea_mask, desired_shape=(128, 144)):
+    # The original land-sea mask has only spatial dimensions.
+    # We'll add two extra dimensions at the beginning and the end to match the shape expected by the padding function.
+    land_sea_mask = land_sea_mask[np.newaxis, ..., np.newaxis]
+
+    # Apply padding
+    padded_mask = pad_images(land_sea_mask, desired_shape)
+
+    # Remove the extra dimensions we added earlier
+    padded_mask = np.squeeze(padded_mask)
+
+    return padded_mask
+
 def main(var_num, lead_time, train_patches = False, learning_rate = 0.01, epochs = 150, batch_size = 64, filters = 16):
     
     # load land_sea_mask
