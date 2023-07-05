@@ -110,10 +110,10 @@ if __name__ == "__main__":
     var_num = 2
     lead_time = 0
     train_patches = False
-    learning_rate = 0.0001
-    epochs = 150
-    batch_size = 64
-    filters = 16
+    learning_rate = 0.001
+    epochs = 300
+    batch_size = 128
+    filters = 20
     
     main(var_num, lead_time, train_patches = train_patches, learning_rate = learning_rate, epochs = epochs, batch_size = batch_size, filters= filters)
     
