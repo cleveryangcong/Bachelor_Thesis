@@ -110,8 +110,8 @@ if __name__ == "__main__":
     var_num = 2
     lead_time = 0
     train_patches = False
-    learning_rate = 0.001
-    epochs = 300
+    learning_rate = 0.00001
+    epochs = 500
     batch_size = 128
     filters = 20
     
