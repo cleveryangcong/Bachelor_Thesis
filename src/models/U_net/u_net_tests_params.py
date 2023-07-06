@@ -168,7 +168,7 @@ if __name__ == "__main__":
     # Call the main function
     
     # Change parameters for different testing
-    var_num = 2
+    var_num = 5
     lead_times = [0,15,30]
     train_patches = False
     initial_learning_rate = 0.005

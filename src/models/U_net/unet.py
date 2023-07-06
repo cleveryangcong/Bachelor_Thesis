@@ -324,26 +324,62 @@ def crps_cost_function_trunc_U(y_true, y_pred):
     # Split input
     mu = y_pred[..., 0]
     sigma = y_pred[..., 1]
+    
+    # Check for NaNs/Infs in mu and sigma
+    mu = tf.debugging.check_numerics(mu, "mu has NaN or Inf")
+    sigma = tf.debugging.check_numerics(sigma, "sigma has NaN or Inf")
 
     var = K.square(sigma)
+
+    # Use softplus to ensure variance is always positive
+    var = tf.keras.activations.softplus(var)
+
+    # Check for NaNs/Infs in variance
+    var = tf.debugging.check_numerics(var, "Variance has NaN or Inf")
+
     loc = (y_true - mu) / K.sqrt(var)
-    
+
+    # Check for NaNs/Infs in loc
+    loc = tf.debugging.check_numerics(loc, "loc has NaN or Inf")
+
     epsilon = 1e-10  # Replace with your small epsilon value
 
     if tf.reduce_any(var == 0):
         var = tf.where(var==0, epsilon, var)
-    
+
     phi = 1.0 / np.sqrt(2.0 * np.pi) * K.exp(-K.square(loc) / 2.0)
-    
+
+    # Check for NaNs/Infs in phi
+    phi = tf.debugging.check_numerics(phi, "phi has NaN or Inf")
+
     Phi_ms = 0.5 * (1.0 + tf.math.erf(mu/sigma / np.sqrt(2.0)))
+
+    # Check for NaNs/Infs in Phi_ms
+    Phi_ms = tf.debugging.check_numerics(Phi_ms, "Phi_ms has NaN or Inf")
+
     Phi = 0.5 * (1.0 + tf.math.erf(loc / np.sqrt(2.0)))
+
+    # Check for NaNs/Infs in Phi
+    Phi = tf.debugging.check_numerics(Phi, "Phi has NaN or Inf")
+
     Phi_2ms = 0.5 * (1.0 + tf.math.erf(np.sqrt(2)*mu/sigma / np.sqrt(2.0)))
-    
-    crps = K.sqrt(var) / K.square( Phi_ms ) * (
+
+    # Check for NaNs/Infs in Phi_2ms
+    Phi_2ms = tf.debugging.check_numerics(Phi_2ms, "Phi_2ms has NaN or Inf")
+
+    epsilon = 1e-7  # choose a small value that works for you
+    crps = K.sqrt(var) / (K.square(Phi_ms) + epsilon) * (
             loc * Phi_ms * (2.0 * Phi + Phi_ms - 2.0)
             + 2.0 * phi * Phi_ms - 1.0 / np.sqrt(np.pi) * Phi_2ms
         )
+
+
+    # Check for NaNs/Infs in crps
+    crps = tf.debugging.check_numerics(crps, "crps has NaN or Inf")
+
     return K.mean(crps)
+
+
 
 
 
