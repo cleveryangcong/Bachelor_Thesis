@@ -103,7 +103,7 @@ def main(var_num, lead_time, train_patches = False, learning_rate = 0.01, epochs
 
     model_checkpoint = ModelCheckpoint(model_filename, save_best_only=True, monitor='val_loss')
     early_stopping = EarlyStopping(monitor='val_loss', patience=50)
-    print_every_n_callback = PrintEveryNCallback(100) # print every 100 epochs
+    print_every_n_callback = PrintEveryNCallback(50) # print every 100 epochs
 
     hist = model.fit(
     train_inputs,
