@@ -105,44 +105,6 @@ def u_net_load_train_data(var_num, lead_time):
     
     return padded_train_data_mean, padded_train_data_std, padded_train_data_y
 
-def u_net_load_train_data(var_num, lead_time):
-    '''
-    Args: 
-        var_num(int): number from 0 - 5
-        lead_time (int): number from 0 - 30
-    Returns:
-        padded_train_data_mean: Normalized and padded training data (mean)
-        padded_train_data_std: Normalized and padded training data (standard deviation)
-        padded_train_data_y: Padded y-values for the training data
-    '''
-    # Load data
-    dat_train_denorm = ldpd.load_data_all_train_proc_denorm()
-
-    # Split Data
-    dat_X_train_lead_all_denorm, dat_y_train_lead_all_denorm = split_var_lead(dat_train_denorm)
-    
-    # Select var and lead_time and change dims
-    train_data_mean = dat_X_train_lead_all_denorm[var_num][lead_time].isel(mean_std=0)
-    train_data_std = dat_X_train_lead_all_denorm[var_num][lead_time].isel(mean_std=1)
-    train_data_y = dat_y_train_lead_all_denorm[var_num][lead_time]
-    train_data_mean = np.expand_dims(train_data_mean, axis=-1)
-    train_data_std = np.expand_dims(train_data_std, axis=-1)
-    
-    # Normalize Data
-    mean_max, std_max = ldpd.load_max_mean_std_values_denorm()
-    mean_min, std_min = ldpd.load_min_mean_std_values_denorm()
-    train_data_mean_norm = (train_data_mean - mean_min[var_num, lead_time]) / (mean_max[var_num, lead_time] - mean_min[var_num, lead_time])
-    train_data_std_norm = (train_data_std - std_min[var_num, lead_time]) / (std_max[var_num, lead_time] - std_min[var_num, lead_time])
-
-    # Pad datasets
-    padded_train_data_mean = pad_images(train_data_mean_norm)
-    padded_train_data_std = pad_images(train_data_std_norm)
-    padded_train_data_y = pad_images_y(train_data_y)
-    
-    return padded_train_data_mean, padded_train_data_std, padded_train_data_y
-
-
-
 def u_net_load_test_data(var_num, lead_time):
     '''
     Args: 

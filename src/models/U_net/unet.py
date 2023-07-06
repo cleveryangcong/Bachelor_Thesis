@@ -5,6 +5,8 @@ from tensorflow.keras.layers import Concatenate, BatchNormalization, Dropout, Cr
 from tensorflow import keras
 from keras.layers import concatenate
 import tensorflow as tf
+from tensorflow.keras.layers import Lambda
+from keras.layers import Activation
 
 from tensorflow.keras.regularizers import l2
 from src.utils.CRPS import *  # CRPS metrics
@@ -119,48 +121,51 @@ class Unet:
 
         # Encoder / contracting path: series of convolutional and pooling layers
         p1, c1 = down(c0, self.filters*4, activation='elu', padding='same', bn=self.bn, apool=self.apool)  # 16
-        print("Downsampling block 1 shape: ", p1.shape)
+#         print("Downsampling block 1 shape: ", p1.shape)
         p2, c2 = down(p1, self.filters*8, activation='elu', padding='same', bn=self.bn, apool=self.apool)  # 8
-        print("Downsampling block 2 shape: ", p2.shape)
+#         print("Downsampling block 2 shape: ", p2.shape)
         p3, c3 = down(p2, self.filters*16, activation='elu', padding='same', bn=self.bn, apool=self.apool)  # 4
-        print("Downsampling block 3 shape: ", p3.shape)
+#         print("Downsampling block 3 shape: ", p3.shape)
 
         # If n_blocks is 4 or greater, add another layer
         if self.n_blocks >= 4:
             p4, c4 = down(p3, self.filters*32, activation='elu', padding='same', bn=self.bn, apool=self.apool) 
-            print("Downsampling block 4 shape: ", p4.shape)
+#             print("Downsampling block 4 shape: ", p4.shape)
         else:
             p4, c4 = [p3, c3]
 
         # If n_blocks is 5 or greater, add another layer
         if self.n_blocks >= 5:
             p5, c5 = down(p4, self.filters*64, activation='elu', padding='same', bn=self.bn, apool=self.apool)
-            print("Downsampling block 5 shape: ", p5.shape)
+#             print("Downsampling block 5 shape: ", p5.shape)
         else:
             p5, c5 = [p4, c4]
 
         # Bottleneck: two convolution layers
         cb = Conv2D(self.filters*4*2**self.n_blocks, (3, 3), activation='elu', padding='same')(p5)
         cb = Conv2D(self.filters*4*2**self.n_blocks, (3, 3), activation='elu', padding='same')(cb)
-        print("Bottleneck shape: ", cb.shape)
+#         print("Bottleneck shape: ", cb.shape)
 
         # Decoder / expanding path: series of convolutional and transpose convolutional layers to upsample back to the original image size
         u5 = up(cb, c5, self.filters*64, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn) if (self.n_blocks >=5 ) else cb
-        print("Upsampling block 5 shape: ", u5.shape)
+#         print("Upsampling block 5 shape: ", u5.shape)
         u4 = up(u5, c4, self.filters*32, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn) if (self.n_blocks >=4 ) else u5
-        print("Upsampling block 4 shape: ", u4.shape)
+#         print("Upsampling block 4 shape: ", u4.shape)
         u3 = up(u4, c3, self.filters*16, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn)
-        print("Upsampling block 3 shape: ", u3.shape)
+#         print("Upsampling block 3 shape: ", u3.shape)
         u2 = up(u3, c2, self.filters*8, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn)
-        print("Upsampling block 2 shape: ", u2.shape)
+#         print("Upsampling block 2 shape: ", u2.shape)
         u1 = up(u2, c1, self.filters*4, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn)
-        print("Upsampling block 1 shape: ", u1.shape)
+#         print("Upsampling block 1 shape: ", u1.shape)
 
         # Apply a linear activation function to the second to last layer for the mean
         mean = Conv2D(1, (1, 1), activation='linear')(u1)
 
         # Apply a softplus activation function to the second to last layer for the std dev, (always positive)
-        stddev = Conv2D(1, (1, 1), activation='softplus')(u1)
+        epsilon = 1e-7
+        stddev_pre = Conv2D(1, (1, 1))(u1)
+        stddev = Lambda(lambda x: K.maximum(x, epsilon))(stddev_pre)
+        stddev = Activation('softplus')(stddev)
 
         # Concatenate the mean and std dev layers along the channel dimension
         out = concatenate([mean, stddev], axis=-1)
@@ -289,11 +294,10 @@ def crps_cost_function_U(y_true, y_pred):
     # Check for NaNs/Infs in variance
     var = tf.debugging.check_numerics(var, "Variance has NaN or Inf")
 
-    epsilon = 1e-10  # Replace with your small epsilon value
+#     epsilon = 1e-10  # Replace with your small epsilon value
 
-    if tf.reduce_any(var == 0):
-        print('Var equals 0')
-        var = tf.where(var==0, epsilon, var)
+#     if tf.reduce_any(var == 0):
+#         var = tf.where(var==0, epsilon, var)
 
     loc = (y_true - mu) / K.sqrt(var)
 
@@ -325,27 +329,66 @@ def crps_cost_function_trunc_U(y_true, y_pred):
     # Split input
     mu = y_pred[..., 0]
     sigma = y_pred[..., 1]
+    
+    # Check for NaNs/Infs in mu and sigma
+    mu = tf.debugging.check_numerics(mu, "mu has NaN or Inf")
+    sigma = tf.debugging.check_numerics(sigma, "sigma has NaN or Inf")
+    tf.print("mu: ", mu)
+    tf.print("sigma: ", sigma)
 
     var = K.square(sigma)
-    loc = (y_true - mu) / K.sqrt(var)
-    
-    epsilon = 1e-10  # Replace with your small epsilon value
 
-    if tf.reduce_any(var == 0):
-        print('Var equals 0')
-        var = tf.where(var==0, epsilon, var)
-    
+    # Use softplus to ensure variance is always positive
+    var = tf.keras.activations.softplus(var)
+
+    # Check for NaNs/Infs in variance
+    var = tf.debugging.check_numerics(var, "Variance has NaN or Inf")
+    tf.print("Variance: ", var)
+
+    loc = (y_true - mu) / K.sqrt(var)
+
+    # Check for NaNs/Infs in loc
+    loc = tf.debugging.check_numerics(loc, "loc has NaN or Inf")
+    tf.print("loc: ", loc)
+
     phi = 1.0 / np.sqrt(2.0 * np.pi) * K.exp(-K.square(loc) / 2.0)
-    
+
+    # Check for NaNs/Infs in phi
+    phi = tf.debugging.check_numerics(phi, "phi has NaN or Inf")
+    tf.print("phi: ", phi)
+
     Phi_ms = 0.5 * (1.0 + tf.math.erf(mu/sigma / np.sqrt(2.0)))
+
+    # Check for NaNs/Infs in Phi_ms
+    Phi_ms = tf.debugging.check_numerics(Phi_ms, "Phi_ms has NaN or Inf")
+    tf.print("Phi_ms: ", Phi_ms)
+
     Phi = 0.5 * (1.0 + tf.math.erf(loc / np.sqrt(2.0)))
+
+    # Check for NaNs/Infs in Phi
+    Phi = tf.debugging.check_numerics(Phi, "Phi has NaN or Inf")
+    tf.print("Phi: ", Phi)
+
     Phi_2ms = 0.5 * (1.0 + tf.math.erf(np.sqrt(2)*mu/sigma / np.sqrt(2.0)))
-    
-    crps = K.sqrt(var) / K.square( Phi_ms ) * (
+
+    # Check for NaNs/Infs in Phi_2ms
+    Phi_2ms = tf.debugging.check_numerics(Phi_2ms, "Phi_2ms has NaN or Inf")
+    tf.print("Phi_2ms: ", Phi_2ms)
+
+    crps = K.sqrt(var) / K.square(Phi_ms) * (
             loc * Phi_ms * (2.0 * Phi + Phi_ms - 2.0)
             + 2.0 * phi * Phi_ms - 1.0 / np.sqrt(np.pi) * Phi_2ms
         )
+
+    # Check for NaNs/Infs in crps
+    crps = tf.debugging.check_numerics(crps, "crps has NaN or Inf")
+    tf.print("crps: ", crps)
+
     return K.mean(crps)
+
+
+
+
 
 
 

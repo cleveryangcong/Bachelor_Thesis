@@ -50,8 +50,7 @@ class PrintEveryNCallback(Callback):
     def on_epoch_end(self, epoch, logs=None):
         if epoch % self.n == 0:
             print(f"Epoch {epoch}, train_loss: {logs.get('loss')}, val_loss: {logs.get('val_loss')}")
-
-
+            
 class EarlyStoppingAfterThreshold(EarlyStopping):
     def __init__(self, threshold, **kwargs):
         super(EarlyStoppingAfterThreshold, self).__init__(**kwargs)
@@ -64,36 +63,10 @@ class EarlyStoppingAfterThreshold(EarlyStopping):
             self.stopping_condition_met = True
         if self.stopping_condition_met:
             super().on_epoch_end(epoch, logs)
-            
-            
-            
-class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
-    def __init__(self, initial_learning_rate, decay_to_learning_rate, decay_steps):
-        super().__init__()
-        self.initial_learning_rate = initial_learning_rate
-        self.decay_to_learning_rate = decay_to_learning_rate
-        self.decay_steps = decay_steps
 
-    def __call__(self, step):
-        learning_rate_diff = self.initial_learning_rate - self.decay_to_learning_rate
-        decayed_learning_rate = learning_rate_diff * (1 - (step / self.decay_steps))
-        final_lr = self.initial_learning_rate - decayed_learning_rate
 
-        # keep final_lr at decay_to_learning_rate after decay_steps
-        return tf.where(
-            tf.less(step, self.decay_steps),
-            final_lr,
-            self.decay_to_learning_rate,
-        )
 
-    def get_config(self):
-        return {
-            "initial_learning_rate": self.initial_learning_rate,
-            "decay_to_learning_rate": self.decay_to_learning_rate,
-            "decay_steps": self.decay_steps,
-        }
-
-def main(var_num, lead_time, train_patches = False, initial_learning_rate= 0.01, decay_to_learning_rate = 0.01, epochs = 150, batch_size = 64, filters = 16):
+def main(var_num, lead_time, train_patches = False, learning_rate = 0.01, epochs = 150, batch_size = 64, filters = 16):
     
     # load land_sea_mask
     land_sea_mask_dummy = np.load(
@@ -128,28 +101,20 @@ def main(var_num, lead_time, train_patches = False, initial_learning_rate= 0.01,
 
     # Initialize the U-Net model
     unet_model = Unet(v=v, train_patches=train_patches, filters = filters)
-    
-    
-    initial_learning_rate = initial_learning_rate
-    decay_to_learning_rate = decay_to_learning_rate
-    steps_per_epoch = tf.math.ceil(1071 / batch_size)  # round up the result of the division
-    decay_steps = int(100 * steps_per_epoch)  # decay over 500 epochs
-
-    lr_schedule = CustomSchedule(initial_learning_rate, decay_to_learning_rate, decay_steps)
 
     # Build the model with your training data shape
-    model = unet_model.build_model(padded_train_data_mean.shape, var_num, learning_rate=lr_schedule)
+    model = unet_model.build_model(padded_train_data_mean.shape, var_num, learning_rate=learning_rate)
     
     # Create a callback to save the log data into a CSV file after each epoch
-    path_log = '/Data/Delong_BA_Data/models/U_net/csv_log/'
-    csv_logger = CSVLogger(f"{path_log}_training_log_var_{var_num}_lead_{lead_time}_lr_{initial_learning_rate}_ep_{epochs}_bs_{batch_size}_filters{filters}.csv")
+    path_log = '/Data/Delong_BA_Data/models/U_net/csv_log_final/'
+    csv_logger = CSVLogger(f"{path_log}training_log_var_{var_num}_lead_{lead_time}.csv")
     
-    path_model = "/Data/Delong_BA_Data/models/U_net/models/"
+    path_model = "/Data/Delong_BA_Data/models/U_net/models_final/"
     # Create a filename for the model checkpoint using the parameters
-    model_filename = f"{path_model}_unet_model_var_{var_num}_lead_{lead_time}_lr_{initial_learning_rate}_ep_{epochs}_bs_{batch_size}_filters{filters}.h5"
+    model_filename = f"{path_model}unet_model_var_{var_num}_lead_{lead_time}.h5"
 
     model_checkpoint = ModelCheckpoint(model_filename, save_best_only=True, monitor='val_loss')
-    early_stopping = EarlyStoppingAfterThreshold(threshold=1.8, monitor='val_loss', patience=25)
+    early_stopping = EarlyStoppingAfterThreshold(threshold=1.8, monitor='val_loss', patience=75)
     print_every_n_callback = PrintEveryNCallback(50) # print every 100 epochs
 
     hist = model.fit(
@@ -161,7 +126,6 @@ def main(var_num, lead_time, train_patches = False, initial_learning_rate= 0.01,
     callbacks = [csv_logger, model_checkpoint, early_stopping, print_every_n_callback],  # add early stopping to callbacks
     verbose = 0
 )
-    
     tf.keras.backend.clear_session()
     
 if __name__ == "__main__":
@@ -169,27 +133,14 @@ if __name__ == "__main__":
     
     # Change parameters for different testing
     var_num = 2
-    lead_times = [0,15,30]
     train_patches = False
-    initial_learning_rate = 0.001
-    decay_to_learning_rate = 0.0001
+    learning_rate = 0.0005
     epochs = 3000
     batch_size = 128
     filters = 24
     
     
-    for lead_time in lead_times:
+    for lead_time in range(0,31):
         print(f'Begin training lead_time {lead_time}')
-        main(var_num, lead_time, train_patches = train_patches, initial_learning_rate = initial_learning_rate, decay_to_learning_rate = decay_to_learning_rate, epochs = epochs, batch_size = batch_size, filters= filters)
-    
-    
-
-
-    
-    
-    
-
-
-
-
-
+        main(var_num, lead_time, train_patches = train_patches, learning_rate = learning_rate, epochs = epochs, batch_size = batch_size, filters= filters)
+        
