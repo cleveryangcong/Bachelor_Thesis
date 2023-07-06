@@ -72,7 +72,7 @@ def main(var_num, lead_time, train_patches = False, learning_rate = 0.01, epochs
             padded_train_data_mean,
             padded_train_data_std,
             padded_train_data_y,
-        ) = u_net_load_train_data(var, 0)
+        ) = u_net_load_train_data(var, lead_time)
         train_var_mean.append(padded_train_data_mean)
         train_var_std.append(padded_train_data_std)
         train_var_y.append(padded_train_data_y)
@@ -114,6 +114,7 @@ def main(var_num, lead_time, train_patches = False, learning_rate = 0.01, epochs
     callbacks = [csv_logger, model_checkpoint, early_stopping, print_every_n_callback],  # add early stopping to callbacks
     verbose = 0
 )
+    tf.keras.backend.clear_session()
     
 if __name__ == "__main__":
     # Call the main function
@@ -130,3 +131,4 @@ if __name__ == "__main__":
     for lead_time in range(0,31):
         print(f'Begin training lead_time {lead_time}')
         main(var_num, lead_time, train_patches = train_patches, learning_rate = learning_rate, epochs = epochs, batch_size = batch_size, filters= filters)
+        
