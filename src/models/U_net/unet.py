@@ -5,6 +5,8 @@ from tensorflow.keras.layers import Concatenate, BatchNormalization, Dropout, Cr
 from tensorflow import keras
 from keras.layers import concatenate
 import tensorflow as tf
+from tensorflow.keras.layers import Lambda
+from keras.layers import Activation
 
 from tensorflow.keras.regularizers import l2
 from src.utils.CRPS import *  # CRPS metrics
@@ -160,7 +162,10 @@ class Unet:
         mean = Conv2D(1, (1, 1), activation='linear')(u1)
 
         # Apply a softplus activation function to the second to last layer for the std dev, (always positive)
-        stddev = Conv2D(1, (1, 1), activation='softplus')(u1)
+        epsilon = 1e-7
+        stddev_pre = Conv2D(1, (1, 1))(u1)
+        stddev = Lambda(lambda x: K.maximum(x, epsilon))(stddev_pre)
+        stddev = Activation('softplus')(stddev)
 
         # Concatenate the mean and std dev layers along the channel dimension
         out = concatenate([mean, stddev], axis=-1)
@@ -289,10 +294,10 @@ def crps_cost_function_U(y_true, y_pred):
     # Check for NaNs/Infs in variance
     var = tf.debugging.check_numerics(var, "Variance has NaN or Inf")
 
-    epsilon = 1e-10  # Replace with your small epsilon value
+#     epsilon = 1e-10  # Replace with your small epsilon value
 
-    if tf.reduce_any(var == 0):
-        var = tf.where(var==0, epsilon, var)
+#     if tf.reduce_any(var == 0):
+#         var = tf.where(var==0, epsilon, var)
 
     loc = (y_true - mu) / K.sqrt(var)
 
@@ -328,6 +333,8 @@ def crps_cost_function_trunc_U(y_true, y_pred):
     # Check for NaNs/Infs in mu and sigma
     mu = tf.debugging.check_numerics(mu, "mu has NaN or Inf")
     sigma = tf.debugging.check_numerics(sigma, "sigma has NaN or Inf")
+    tf.print("mu: ", mu)
+    tf.print("sigma: ", sigma)
 
     var = K.square(sigma)
 
@@ -336,48 +343,50 @@ def crps_cost_function_trunc_U(y_true, y_pred):
 
     # Check for NaNs/Infs in variance
     var = tf.debugging.check_numerics(var, "Variance has NaN or Inf")
+    tf.print("Variance: ", var)
 
     loc = (y_true - mu) / K.sqrt(var)
 
     # Check for NaNs/Infs in loc
     loc = tf.debugging.check_numerics(loc, "loc has NaN or Inf")
-
-    epsilon = 1e-10  # Replace with your small epsilon value
-
-    if tf.reduce_any(var == 0):
-        var = tf.where(var==0, epsilon, var)
+    tf.print("loc: ", loc)
 
     phi = 1.0 / np.sqrt(2.0 * np.pi) * K.exp(-K.square(loc) / 2.0)
 
     # Check for NaNs/Infs in phi
     phi = tf.debugging.check_numerics(phi, "phi has NaN or Inf")
+    tf.print("phi: ", phi)
 
     Phi_ms = 0.5 * (1.0 + tf.math.erf(mu/sigma / np.sqrt(2.0)))
 
     # Check for NaNs/Infs in Phi_ms
     Phi_ms = tf.debugging.check_numerics(Phi_ms, "Phi_ms has NaN or Inf")
+    tf.print("Phi_ms: ", Phi_ms)
 
     Phi = 0.5 * (1.0 + tf.math.erf(loc / np.sqrt(2.0)))
 
     # Check for NaNs/Infs in Phi
     Phi = tf.debugging.check_numerics(Phi, "Phi has NaN or Inf")
+    tf.print("Phi: ", Phi)
 
     Phi_2ms = 0.5 * (1.0 + tf.math.erf(np.sqrt(2)*mu/sigma / np.sqrt(2.0)))
 
     # Check for NaNs/Infs in Phi_2ms
     Phi_2ms = tf.debugging.check_numerics(Phi_2ms, "Phi_2ms has NaN or Inf")
+    tf.print("Phi_2ms: ", Phi_2ms)
 
-    epsilon = 1e-7  # choose a small value that works for you
-    crps = K.sqrt(var) / (K.square(Phi_ms) + epsilon) * (
+    crps = K.sqrt(var) / K.square(Phi_ms) * (
             loc * Phi_ms * (2.0 * Phi + Phi_ms - 2.0)
             + 2.0 * phi * Phi_ms - 1.0 / np.sqrt(np.pi) * Phi_2ms
         )
 
-
     # Check for NaNs/Infs in crps
     crps = tf.debugging.check_numerics(crps, "crps has NaN or Inf")
+    tf.print("crps: ", crps)
 
     return K.mean(crps)
+
+
 
 
 
