@@ -52,7 +52,18 @@ class PrintEveryNCallback(Callback):
             print(f"Epoch {epoch}, train_loss: {logs.get('loss')}, val_loss: {logs.get('val_loss')}")
 
 
+class EarlyStoppingAfterThreshold(EarlyStopping):
+    def __init__(self, threshold, **kwargs):
+        super(EarlyStoppingAfterThreshold, self).__init__(**kwargs)
+        self.threshold = threshold
+        self.stopping_condition_met = False
 
+    def on_epoch_end(self, epoch, logs=None):
+        val_loss = logs.get('val_loss', 0)
+        if not self.stopping_condition_met and val_loss <= self.threshold:
+            self.stopping_condition_met = True
+        if self.stopping_condition_met:
+            super().on_epoch_end(epoch, logs)
 
 def main(var_num, lead_time, train_patches = False, learning_rate = 0.01, epochs = 150, batch_size = 64, filters = 16):
     
@@ -102,7 +113,7 @@ def main(var_num, lead_time, train_patches = False, learning_rate = 0.01, epochs
     model_filename = f"{path_model}_unet_model_var_{var_num}_lead_{lead_time}_lr_{learning_rate}_ep_{epochs}_bs_{batch_size}_filters{filters}.h5"
 
     model_checkpoint = ModelCheckpoint(model_filename, save_best_only=True, monitor='val_loss')
-    early_stopping = EarlyStopping(monitor='val_loss', patience=50)
+    early_stopping = EarlyStoppingAfterThreshold(threshold=1.8, monitor='val_loss', patience=75)
     print_every_n_callback = PrintEveryNCallback(100) # print every 100 epochs
 
     hist = model.fit(
