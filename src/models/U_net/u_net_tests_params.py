@@ -86,6 +86,13 @@ class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
             self.decay_to_learning_rate,
         )
 
+    def get_config(self):
+        return {
+            "initial_learning_rate": self.initial_learning_rate,
+            "decay_to_learning_rate": self.decay_to_learning_rate,
+            "decay_steps": self.decay_steps,
+        }
+
 def main(var_num, lead_time, train_patches = False, initial_learning_rate= 0.01, decay_to_learning_rate = 0.01, epochs = 150, batch_size = 64, filters = 16):
     
     # load land_sea_mask
@@ -126,7 +133,7 @@ def main(var_num, lead_time, train_patches = False, initial_learning_rate= 0.01,
     initial_learning_rate = initial_learning_rate
     decay_to_learning_rate = decay_to_learning_rate
     steps_per_epoch = tf.math.ceil(1071 / batch_size)  # round up the result of the division
-    decay_steps = 500 * steps_per_epoch  # decay over 500 epochs
+    decay_steps = int(500 * steps_per_epoch)  # decay over 500 epochs
 
     lr_schedule = CustomSchedule(initial_learning_rate, decay_to_learning_rate, decay_steps)
 
