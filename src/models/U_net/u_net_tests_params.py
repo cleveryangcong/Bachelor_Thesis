@@ -4,7 +4,8 @@ sys.path.append("/home/dchen/BA_CH_EN/")
 
 # Basics
 import tensorflow as tf
-from tensorflow.keras.callbacks import CSVLogger, ModelCheckpoint
+from tensorflow.keras.callbacks import CSVLogger, ModelCheckpoint, EarlyStopping
+from tensorflow.keras.callbacks import Callback
 import xarray as xr
 
 # Helpful
@@ -41,6 +42,17 @@ def pad_land_sea_mask(land_sea_mask, desired_shape=(128, 144)):
     padded_mask = np.squeeze(padded_mask)
 
     return padded_mask
+
+class PrintEveryNCallback(Callback):
+    def __init__(self, n):
+        self.n = n
+
+    def on_epoch_end(self, epoch, logs=None):
+        if epoch % self.n == 0:
+            print(f"Epoch {epoch}, train_loss: {logs.get('loss')}, val_loss: {logs.get('val_loss')}")
+
+
+
 
 def main(var_num, lead_time, train_patches = False, learning_rate = 0.01, epochs = 150, batch_size = 64, filters = 16):
     
@@ -90,32 +102,35 @@ def main(var_num, lead_time, train_patches = False, learning_rate = 0.01, epochs
     model_filename = f"{path_model}_unet_model_var_{var_num}_lead_{lead_time}_lr_{learning_rate}_ep_{epochs}_bs_{batch_size}_filters{filters}.h5"
 
     model_checkpoint = ModelCheckpoint(model_filename, save_best_only=True, monitor='val_loss')
-    
-    
+    early_stopping = EarlyStopping(monitor='val_loss', patience=50)
+    print_every_n_callback = PrintEveryNCallback(100) # print every 100 epochs
+
     hist = model.fit(
     train_inputs,
     train_target,
     epochs=epochs,
     batch_size=batch_size,
     validation_split=0.25,
-    callbacks = [csv_logger, model_checkpoint],
+    callbacks = [csv_logger, model_checkpoint, early_stopping, print_every_n_callback],  # add early stopping to callbacks
     verbose = 0
 )
-    
     
 if __name__ == "__main__":
     # Call the main function
     
     # Change parameters for different testing
     var_num = 2
-    lead_time = 0
+    lead_times = [0,15,30]
     train_patches = False
-    learning_rate = 0.0001
-    epochs = 500
+    learning_rate = 0.0005
+    epochs = 3000
     batch_size = 128
     filters = 24
     
-    main(var_num, lead_time, train_patches = train_patches, learning_rate = learning_rate, epochs = epochs, batch_size = batch_size, filters= filters)
+    
+    for lead_time in lead_times:
+        print(f'Begin training lead_time {lead_time}')
+        main(var_num, lead_time, train_patches = train_patches, learning_rate = learning_rate, epochs = epochs, batch_size = batch_size, filters= filters)
     
     
 

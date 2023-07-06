@@ -119,42 +119,42 @@ class Unet:
 
         # Encoder / contracting path: series of convolutional and pooling layers
         p1, c1 = down(c0, self.filters*4, activation='elu', padding='same', bn=self.bn, apool=self.apool)  # 16
-        print("Downsampling block 1 shape: ", p1.shape)
+#         print("Downsampling block 1 shape: ", p1.shape)
         p2, c2 = down(p1, self.filters*8, activation='elu', padding='same', bn=self.bn, apool=self.apool)  # 8
-        print("Downsampling block 2 shape: ", p2.shape)
+#         print("Downsampling block 2 shape: ", p2.shape)
         p3, c3 = down(p2, self.filters*16, activation='elu', padding='same', bn=self.bn, apool=self.apool)  # 4
-        print("Downsampling block 3 shape: ", p3.shape)
+#         print("Downsampling block 3 shape: ", p3.shape)
 
         # If n_blocks is 4 or greater, add another layer
         if self.n_blocks >= 4:
             p4, c4 = down(p3, self.filters*32, activation='elu', padding='same', bn=self.bn, apool=self.apool) 
-            print("Downsampling block 4 shape: ", p4.shape)
+#             print("Downsampling block 4 shape: ", p4.shape)
         else:
             p4, c4 = [p3, c3]
 
         # If n_blocks is 5 or greater, add another layer
         if self.n_blocks >= 5:
             p5, c5 = down(p4, self.filters*64, activation='elu', padding='same', bn=self.bn, apool=self.apool)
-            print("Downsampling block 5 shape: ", p5.shape)
+#             print("Downsampling block 5 shape: ", p5.shape)
         else:
             p5, c5 = [p4, c4]
 
         # Bottleneck: two convolution layers
         cb = Conv2D(self.filters*4*2**self.n_blocks, (3, 3), activation='elu', padding='same')(p5)
         cb = Conv2D(self.filters*4*2**self.n_blocks, (3, 3), activation='elu', padding='same')(cb)
-        print("Bottleneck shape: ", cb.shape)
+#         print("Bottleneck shape: ", cb.shape)
 
         # Decoder / expanding path: series of convolutional and transpose convolutional layers to upsample back to the original image size
         u5 = up(cb, c5, self.filters*64, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn) if (self.n_blocks >=5 ) else cb
-        print("Upsampling block 5 shape: ", u5.shape)
+#         print("Upsampling block 5 shape: ", u5.shape)
         u4 = up(u5, c4, self.filters*32, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn) if (self.n_blocks >=4 ) else u5
-        print("Upsampling block 4 shape: ", u4.shape)
+#         print("Upsampling block 4 shape: ", u4.shape)
         u3 = up(u4, c3, self.filters*16, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn)
-        print("Upsampling block 3 shape: ", u3.shape)
+#         print("Upsampling block 3 shape: ", u3.shape)
         u2 = up(u3, c2, self.filters*8, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn)
-        print("Upsampling block 2 shape: ", u2.shape)
+#         print("Upsampling block 2 shape: ", u2.shape)
         u1 = up(u2, c1, self.filters*4, self.ct_kernel, self.ct_stride, activation='elu', padding='same', bn=self.bn)
-        print("Upsampling block 1 shape: ", u1.shape)
+#         print("Upsampling block 1 shape: ", u1.shape)
 
         # Apply a linear activation function to the second to last layer for the mean
         mean = Conv2D(1, (1, 1), activation='linear')(u1)
@@ -292,7 +292,6 @@ def crps_cost_function_U(y_true, y_pred):
     epsilon = 1e-10  # Replace with your small epsilon value
 
     if tf.reduce_any(var == 0):
-        print('Var equals 0')
         var = tf.where(var==0, epsilon, var)
 
     loc = (y_true - mu) / K.sqrt(var)
@@ -332,7 +331,6 @@ def crps_cost_function_trunc_U(y_true, y_pred):
     epsilon = 1e-10  # Replace with your small epsilon value
 
     if tf.reduce_any(var == 0):
-        print('Var equals 0')
         var = tf.where(var==0, epsilon, var)
     
     phi = 1.0 / np.sqrt(2.0 * np.pi) * K.exp(-K.square(loc) / 2.0)
