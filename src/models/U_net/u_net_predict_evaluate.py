@@ -112,7 +112,7 @@ def main(var_num, lead_time):
     y=test_target_unpad.flatten(),
 )
         
-    scores = scores.reshape((357, 120, 130, 2)).mean(axis=0)
+    scores = scores.reshape((357, 120, 130)).mean(axis=0)
     path_scores ="/Data/Delong_BA_Data/scores/U_net/"
     np.save(f'{path_scores}U_net_var_{var_num}_lead_{lead_time}_scores.npy', scores)
     
