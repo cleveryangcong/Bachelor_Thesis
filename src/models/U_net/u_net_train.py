@@ -64,9 +64,34 @@ class EarlyStoppingAfterThreshold(EarlyStopping):
         if self.stopping_condition_met:
             super().on_epoch_end(epoch, logs)
 
+class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
+    def __init__(self, initial_learning_rate, decay_to_learning_rate, decay_steps):
+        super().__init__()
+        self.initial_learning_rate = initial_learning_rate
+        self.decay_to_learning_rate = decay_to_learning_rate
+        self.decay_steps = decay_steps
+
+    def __call__(self, step):
+        learning_rate_diff = self.initial_learning_rate - self.decay_to_learning_rate
+        decayed_learning_rate = learning_rate_diff * (1 - (step / self.decay_steps))
+        final_lr = self.initial_learning_rate - decayed_learning_rate
+
+        # keep final_lr at decay_to_learning_rate after decay_steps
+        return tf.where(
+            tf.less(step, self.decay_steps),
+            final_lr,
+            self.decay_to_learning_rate,
+        )
+
+    def get_config(self):
+        return {
+            "initial_learning_rate": self.initial_learning_rate,
+            "decay_to_learning_rate": self.decay_to_learning_rate,
+            "decay_steps": self.decay_steps,
+        }
 
 
-def main(var_num, lead_time, train_patches = False, learning_rate = 0.01, epochs = 150, batch_size = 64, filters = 16):
+def main(var_num, lead_time, threshold = 2, train_patches = False, learning_rate = 0.01, epochs = 150, batch_size = 64, filters = 16):
     
     # load land_sea_mask
     land_sea_mask_dummy = np.load(
@@ -101,9 +126,16 @@ def main(var_num, lead_time, train_patches = False, learning_rate = 0.01, epochs
 
     # Initialize the U-Net model
     unet_model = Unet(v=v, train_patches=train_patches, filters = filters)
+    
+    initial_learning_rate = initial_learning_rate
+    decay_to_learning_rate = decay_to_learning_rate
+    steps_per_epoch = tf.math.ceil(1071 / batch_size)  # round up the result of the division
+    decay_steps = int(100 * steps_per_epoch)  # decay over 500 epochs
+
+    lr_schedule = CustomSchedule(initial_learning_rate, decay_to_learning_rate, decay_steps)
 
     # Build the model with your training data shape
-    model = unet_model.build_model(padded_train_data_mean.shape, var_num, learning_rate=learning_rate)
+    model = unet_model.build_model(padded_train_data_mean.shape, var_num, learning_rate=lr_schedule)
     
     # Create a callback to save the log data into a CSV file after each epoch
     path_log = '/Data/Delong_BA_Data/models/U_net/csv_log_final/'
@@ -114,7 +146,7 @@ def main(var_num, lead_time, train_patches = False, learning_rate = 0.01, epochs
     model_filename = f"{path_model}unet_model_var_{var_num}_lead_{lead_time}.h5"
 
     model_checkpoint = ModelCheckpoint(model_filename, save_best_only=True, monitor='val_loss')
-    early_stopping = EarlyStoppingAfterThreshold(threshold=1.8, monitor='val_loss', patience=75)
+    early_stopping = EarlyStoppingAfterThreshold(threshold=threshold, monitor='val_loss', patience=75)
     print_every_n_callback = PrintEveryNCallback(50) # print every 100 epochs
 
     hist = model.fit(
@@ -133,14 +165,22 @@ if __name__ == "__main__":
     
     # Change parameters for different testing
     var_num = 2
+    lead_times = [0,15,30]
     train_patches = False
-    learning_rate = 0.0005
+    initial_learning_rate = 0.001
+    decay_to_learning_rate = 0.0001
     epochs = 3000
-    batch_size = 128
+    batch_size = 64
     filters = 24
+    
+    if var_num == 2:
+        CRPS_baseline_scores = crps_load_lead_lat_lon("t2m")
+        
+    elif var_num == 5:
+        CRPS_baseline_scores = crps_load_lead_lat_lon("ws10")
     
     
     for lead_time in range(0,31):
         print(f'Begin training lead_time {lead_time}')
-        main(var_num, lead_time, train_patches = train_patches, learning_rate = learning_rate, epochs = epochs, batch_size = batch_size, filters= filters)
+        main(var_num, lead_time, threshold = CRPS_baseline_scores[lead_time].mean(), train_patches = train_patches, initial_learning_rate = initial_learning_rate, decay_to_learning_rate = decay_to_learning_rate, epochs = epochs, batch_size = batch_size, filters= filters)
         

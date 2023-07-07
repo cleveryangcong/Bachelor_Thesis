@@ -93,7 +93,7 @@ class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
             "decay_steps": self.decay_steps,
         }
 
-def main(var_num, lead_time, train_patches = False, initial_learning_rate= 0.01, decay_to_learning_rate = 0.01, epochs = 150, batch_size = 64, filters = 16):
+def main(var_num, lead_time,threshold = 2, train_patches = False, initial_learning_rate= 0.01, decay_to_learning_rate = 0.01, epochs = 150, batch_size = 64, filters = 16):
     
     # load land_sea_mask
     land_sea_mask_dummy = np.load(
@@ -133,7 +133,7 @@ def main(var_num, lead_time, train_patches = False, initial_learning_rate= 0.01,
     initial_learning_rate = initial_learning_rate
     decay_to_learning_rate = decay_to_learning_rate
     steps_per_epoch = tf.math.ceil(1071 / batch_size)  # round up the result of the division
-    decay_steps = int(100 * steps_per_epoch)  # decay over 500 epochs
+    decay_steps = int(200 * steps_per_epoch)  # decay over 500 epochs
 
     lr_schedule = CustomSchedule(initial_learning_rate, decay_to_learning_rate, decay_steps)
 
@@ -149,7 +149,7 @@ def main(var_num, lead_time, train_patches = False, initial_learning_rate= 0.01,
     model_filename = f"{path_model}_unet_model_var_{var_num}_lead_{lead_time}_lr_{initial_learning_rate}_ep_{epochs}_bs_{batch_size}_filters{filters}.h5"
 
     model_checkpoint = ModelCheckpoint(model_filename, save_best_only=True, monitor='val_loss')
-    early_stopping = EarlyStoppingAfterThreshold(threshold=1.8, monitor='val_loss', patience=25)
+    early_stopping = EarlyStoppingAfterThreshold(threshold=threshold, monitor='val_loss', patience=25)
     print_every_n_callback = PrintEveryNCallback(50) # print every 100 epochs
 
     hist = model.fit(
@@ -174,13 +174,19 @@ if __name__ == "__main__":
     initial_learning_rate = 0.001
     decay_to_learning_rate = 0.0001
     epochs = 3000
-    batch_size = 128
+    batch_size = 64
     filters = 24
+    if var_num == 2:
+        CRPS_baseline_scores = crps_load_lead_lat_lon("t2m")
+        
+    elif var_num == 5:
+        CRPS_baseline_scores = crps_load_lead_lat_lon("ws10")
     
+
     
     for lead_time in lead_times:
         print(f'Begin training lead_time {lead_time}')
-        main(var_num, lead_time, train_patches = train_patches, initial_learning_rate = initial_learning_rate, decay_to_learning_rate = decay_to_learning_rate, epochs = epochs, batch_size = batch_size, filters= filters)
+        main(var_num, lead_time, threshold = CRPS_baseline_scores[lead_time].mean(), train_patches = train_patches, initial_learning_rate = initial_learning_rate, decay_to_learning_rate = decay_to_learning_rate, epochs = epochs, batch_size = batch_size, filters= filters)
     
     
 
