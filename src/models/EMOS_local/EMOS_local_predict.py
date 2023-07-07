@@ -4,6 +4,15 @@ import argparse
 import multiprocessing as mp
 
 # TensorFlow and Keras
+
+
+import os
+
+os.environ[
+    "CUDA_VISIBLE_DEVICES"
+] = "-1"  # this line tells TensorFlow not to use any GPU
+
+
 import keras.backend as K
 import tensorflow as tf
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
@@ -137,7 +146,7 @@ if __name__ == "__main__":
     results = []
 
     # Call the main function for each lead_time
-    for lead_time in [0,15,30]:
+    for lead_time in range(31):
         result = pool.apply_async(main, args=(args.var_num, lead_time))
         results.append(result)
     
