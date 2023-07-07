@@ -29,7 +29,7 @@ from src.models.CRPS_baseline.CRPS_load import *  # Load CRPS scores
 from src.models.U_net.unet import Unet
 from src.models.U_net.u_net_tests_params import *
 from src.models.U_net.unet import *
-
+from src.models.U_net.u_net_train import *
 
 
 def unpad_images(images, original_shape=(120, 130)):
@@ -63,6 +63,7 @@ def main(var_num, lead_time):
         custom_objects={
             "crps_cost_function_U": crps_cost_function_U,
             "crps_cost_function_trunc_U": crps_cost_function_trunc_U,
+            "CustomSchedule": CustomSchedule,
         },
     )
     # load land_sea_mask
