@@ -165,7 +165,6 @@ if __name__ == "__main__":
     
     # Change parameters for different testing
     var_num = 2
-    lead_times = [0,15,30]
     train_patches = False
     initial_learning_rate = 0.001
     decay_to_learning_rate = 0.0001
