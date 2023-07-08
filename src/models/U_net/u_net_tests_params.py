@@ -133,7 +133,7 @@ def main(var_num, lead_time,threshold = 2, train_patches = False, initial_learni
     initial_learning_rate = initial_learning_rate
     decay_to_learning_rate = decay_to_learning_rate
     steps_per_epoch = tf.math.ceil(1071 / batch_size)  # round up the result of the division
-    decay_steps = int(200 * steps_per_epoch)  # decay over 500 epochs
+    decay_steps = int(50 * steps_per_epoch)  # decay over 500 epochs
 
     lr_schedule = CustomSchedule(initial_learning_rate, decay_to_learning_rate, decay_steps)
 
@@ -171,10 +171,10 @@ if __name__ == "__main__":
     var_num = 5
     lead_times = [0,15,30]
     train_patches = False
-    initial_learning_rate = 0.001
-    decay_to_learning_rate = 0.0001
+    initial_learning_rate = 0.00001
+    decay_to_learning_rate = 0.000001
     epochs = 3000
-    batch_size = 64
+    batch_size = 32
     filters = 16
     if var_num == 2:
         CRPS_baseline_scores = crps_load_lead_lat_lon("t2m")
