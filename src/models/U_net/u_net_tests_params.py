@@ -149,7 +149,7 @@ def main(var_num, lead_time,threshold = 2, train_patches = False, initial_learni
     model_filename = f"{path_model}_unet_model_var_{var_num}_lead_{lead_time}_lr_{initial_learning_rate}_ep_{epochs}_bs_{batch_size}_filters{filters}.h5"
 
     model_checkpoint = ModelCheckpoint(model_filename, save_best_only=True, monitor='val_loss')
-    early_stopping = EarlyStoppingAfterThreshold(threshold=threshold, monitor='val_loss', patience=25)
+    early_stopping = EarlyStoppingAfterThreshold(threshold=threshold, monitor='val_loss', patience=50)
     print_every_n_callback = PrintEveryNCallback(50) # print every 100 epochs
 
     hist = model.fit(
