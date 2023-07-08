@@ -130,7 +130,7 @@ def main(var_num, lead_time, threshold = 2, train_patches = False,  initial_lear
     initial_learning_rate = initial_learning_rate
     decay_to_learning_rate = decay_to_learning_rate
     steps_per_epoch = tf.math.ceil(1071 / batch_size)  # round up the result of the division
-    decay_steps = int(200 * steps_per_epoch)  # decay over 500 epochs
+    decay_steps = int(50 * steps_per_epoch)  # decay over 500 epochs
 
     lr_schedule = CustomSchedule(initial_learning_rate, decay_to_learning_rate, decay_steps)
 
@@ -146,8 +146,8 @@ def main(var_num, lead_time, threshold = 2, train_patches = False,  initial_lear
     model_filename = f"{path_model}unet_model_var_{var_num}_lead_{lead_time}.h5"
 
     model_checkpoint = ModelCheckpoint(model_filename, save_best_only=True, monitor='val_loss')
-    early_stopping = EarlyStoppingAfterThreshold(threshold=threshold, monitor='val_loss', patience=25)
-    print_every_n_callback = PrintEveryNCallback(50) # print every 100 epochs
+    early_stopping = EarlyStoppingAfterThreshold(threshold=threshold, monitor='val_loss', patience=50)
+    print_every_n_callback = PrintEveryNCallback(50) # print every 50 epochs
 
     hist = model.fit(
     train_inputs,
@@ -164,13 +164,13 @@ if __name__ == "__main__":
     # Call the main function
     
     # Change parameters for different testing
-    var_num = 2
+    var_num = 5
     train_patches = False
-    initial_learning_rate = 0.001
-    decay_to_learning_rate = 0.0001
+    initial_learning_rate = 0.00001
+    decay_to_learning_rate = 0.000001
     epochs = 3000
-    batch_size = 64
-    filters = 24
+    batch_size = 32
+    filters = 16
     
     if var_num == 2:
         CRPS_baseline_scores = crps_load_lead_lat_lon("t2m")
