@@ -334,8 +334,8 @@ def crps_cost_function_trunc_U(y_true, y_pred):
     # Check for NaNs/Infs in mu and sigma
     mu = tf.debugging.check_numerics(mu, "mu has NaN or Inf")
     sigma = tf.debugging.check_numerics(sigma, "sigma has NaN or Inf")
-    tf.print("mu: ", mu)
-    tf.print("sigma: ", sigma)
+#     tf.print("mu: ", mu)
+#     tf.print("sigma: ", sigma)
 
     var = K.square(sigma)
 
@@ -343,37 +343,37 @@ def crps_cost_function_trunc_U(y_true, y_pred):
 
     # Check for NaNs/Infs in variance
     var = tf.debugging.check_numerics(var, "Variance has NaN or Inf")
-    tf.print("Variance: ", var)
+#     tf.print("Variance: ", var)
 
     loc = (y_true - mu) / K.sqrt(var)
 
     # Check for NaNs/Infs in loc
     loc = tf.debugging.check_numerics(loc, "loc has NaN or Inf")
-    tf.print("loc: ", loc)
+#     tf.print("loc: ", loc)
 
     phi = 1.0 / np.sqrt(2.0 * np.pi) * K.exp(-K.square(loc) / 2.0)
 
     # Check for NaNs/Infs in phi
     phi = tf.debugging.check_numerics(phi, "phi has NaN or Inf")
-    tf.print("phi: ", phi)
+#     tf.print("phi: ", phi)
 
     Phi_ms = 0.5 * (1.0 + tf.math.erf(mu/sigma / np.sqrt(2.0)))
 
     # Check for NaNs/Infs in Phi_ms
     Phi_ms = tf.debugging.check_numerics(Phi_ms, "Phi_ms has NaN or Inf")
-    tf.print("Phi_ms: ", Phi_ms)
+#     tf.print("Phi_ms: ", Phi_ms)
 
     Phi = 0.5 * (1.0 + tf.math.erf(loc / np.sqrt(2.0)))
 
     # Check for NaNs/Infs in Phi
     Phi = tf.debugging.check_numerics(Phi, "Phi has NaN or Inf")
-    tf.print("Phi: ", Phi)
+#     tf.print("Phi: ", Phi)
 
     Phi_2ms = 0.5 * (1.0 + tf.math.erf(np.sqrt(2)*mu/sigma / np.sqrt(2.0)))
 
     # Check for NaNs/Infs in Phi_2ms
     Phi_2ms = tf.debugging.check_numerics(Phi_2ms, "Phi_2ms has NaN or Inf")
-    tf.print("Phi_2ms: ", Phi_2ms)
+#     tf.print("Phi_2ms: ", Phi_2ms)
 
     crps = K.sqrt(var) / K.square(Phi_ms) * (
             loc * Phi_ms * (2.0 * Phi + Phi_ms - 2.0)
@@ -382,7 +382,7 @@ def crps_cost_function_trunc_U(y_true, y_pred):
 
     # Check for NaNs/Infs in crps
     crps = tf.debugging.check_numerics(crps, "crps has NaN or Inf")
-    tf.print("crps: ", crps)
+#     tf.print("crps: ", crps)
 
     return K.mean(crps)
 
