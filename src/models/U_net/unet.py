@@ -7,6 +7,7 @@ from keras.layers import concatenate
 import tensorflow as tf
 from tensorflow.keras.layers import Lambda
 from keras.layers import Activation
+import keras.backend as K
 
 from tensorflow.keras.regularizers import l2
 from src.utils.CRPS import *  # CRPS metrics
@@ -327,8 +328,8 @@ def crps_cost_function_trunc_U(y_true, y_pred):
     Crps cost function truncated for normal distributions
     '''
     # Split input
-    mu = y_pred[..., 0]
-    sigma = y_pred[..., 1]
+    mu = K.abs(y_pred[..., 0])
+    sigma = K.abs(y_pred[..., 1])
     
     # Check for NaNs/Infs in mu and sigma
     mu = tf.debugging.check_numerics(mu, "mu has NaN or Inf")
@@ -339,7 +340,6 @@ def crps_cost_function_trunc_U(y_true, y_pred):
     var = K.square(sigma)
 
     # Use softplus to ensure variance is always positive
-    var = tf.keras.activations.softplus(var)
 
     # Check for NaNs/Infs in variance
     var = tf.debugging.check_numerics(var, "Variance has NaN or Inf")

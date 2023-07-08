@@ -168,14 +168,14 @@ if __name__ == "__main__":
     # Call the main function
     
     # Change parameters for different testing
-    var_num = 2
+    var_num = 5
     lead_times = [0,15,30]
     train_patches = False
     initial_learning_rate = 0.001
     decay_to_learning_rate = 0.0001
     epochs = 3000
     batch_size = 64
-    filters = 24
+    filters = 16
     if var_num == 2:
         CRPS_baseline_scores = crps_load_lead_lat_lon("t2m")
         
