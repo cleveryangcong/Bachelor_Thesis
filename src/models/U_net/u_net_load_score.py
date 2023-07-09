@@ -2,7 +2,7 @@ import os
 import numpy as np
 import fnmatch
 
-def u_net_load_scores(var_name):
+def u_net_load_score(var_name):
     '''
     Args:
         path (string): path to the directory that contains the numpy arrays
