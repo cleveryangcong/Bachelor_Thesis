@@ -16,7 +16,7 @@ def u_net_load_score(var_name):
     dict_names = {'u10': 0, 'v10': 1, 't2m': 2, 't850':3, 'z500':4, 'ws10':5}
     var_num = dict_names[var_name]
     # Create the file pattern based on the variable name
-    file_pattern = f'U_net_var_{var_num}_lead_time_*_scores.npy'
+    file_pattern = f'U_net_var_{var_num}_lead_*_scores.npy'
 
     # List all files in the directory
     files = os.listdir(path)
@@ -25,7 +25,7 @@ def u_net_load_score(var_name):
     npy_files = [file for file in files if fnmatch.fnmatch(file, file_pattern)]
     
     # Sort the file list based on the lead time
-    npy_files.sort(key=lambda file: int(file.split('_')[4]))
+    npy_files.sort(key=lambda file: int(file.split('_')[5]))
     
     # Load each .npy file and store it in a list
     arrays = [np.load(os.path.join(path, file)) for file in npy_files]
