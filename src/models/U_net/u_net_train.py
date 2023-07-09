@@ -181,5 +181,5 @@ if __name__ == "__main__":
     
     for lead_time in range(17,31):
         print(f'Begin training lead_time {lead_time}')
-        main(var_num, lead_time, threshold = CRPS_baseline_scores[lead_time].mean(), train_patches = train_patches, initial_learning_rate = initial_learning_rate, decay_to_learning_rate = decay_to_learning_rate, epochs = epochs, batch_size = batch_size, filters= filters)
+        main(var_num, lead_time, threshold = (CRPS_baseline_scores[lead_time].mean() + 0.15), train_patches = train_patches, initial_learning_rate = initial_learning_rate, decay_to_learning_rate = decay_to_learning_rate, epochs = epochs, batch_size = batch_size, filters= filters)
         
