@@ -175,7 +175,7 @@ if __name__ == "__main__":
     decay_to_learning_rate = 0.000001
     epochs = 3000
     batch_size = 32
-    filters = 16
+    filters = 24
     if var_num == 2:
         CRPS_baseline_scores = crps_load_lead_lat_lon("t2m")
         
