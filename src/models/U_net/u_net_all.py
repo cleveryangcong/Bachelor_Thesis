@@ -89,7 +89,30 @@ class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
             "decay_to_learning_rate": self.decay_to_learning_rate,
             "decay_steps": self.decay_steps,
         }
+    
+    def unpad_images(images, original_shape=(120, 130)):
+        # Calculate padding for height and width
+        pad_height = (images.shape[1] - original_shape[0]) // 2
+        pad_width = (images.shape[2] - original_shape[1]) // 2
 
+        unpadded_images = images[
+            :, pad_height : -pad_height or None, pad_width : -pad_width or None, :
+        ]
+        return unpadded_images
+
+
+    def unpad_images_y(images, original_shape=(120, 130)):
+        # Calculate padding for height and width
+        pad_height_t = (images.shape[1] - original_shape[0]) // 2
+        pad_height_b = images.shape[1] - pad_height_t - original_shape[0]
+
+        pad_width_l = (images.shape[2] - original_shape[1]) // 2
+        pad_width_r = images.shape[2] - pad_width_l - original_shape[1]
+
+        unpadded_images = images[
+            :, pad_height_t : -pad_height_b or None, pad_width_l : -pad_width_r or None
+        ]
+        return unpadded_images
 
 def main(var_num, lead_time, threshold = 2, train_patches = False,  initial_learning_rate= 0.01, decay_to_learning_rate = 0.01, epochs = 150, batch_size = 64, filters = 16, num_name = 0):
     
@@ -137,15 +160,10 @@ def main(var_num, lead_time, threshold = 2, train_patches = False,  initial_lear
     # Build the model with your training data shape
     model = unet_model.build_model(padded_train_data_mean.shape, var_num, learning_rate=lr_schedule)
     
-    # Create a callback to save the log data into a CSV file after each epoch
+ # Create a callback to save the log data into a CSV file after each epoch
     path_log = '/Data/Delong_BA_Data/models/U_net/csv_log_final/'
     csv_logger = CSVLogger(f"{path_log}training{num_name}_log_var_{var_num}_lead_{lead_time}.csv")
     
-    path_model = "/Data/Delong_BA_Data/models/U_net/models_final/"
-    # Create a filename for the model checkpoint using the parameters
-    model_filename = f"{path_model}unet_model_{num_name}_var_{var_num}_lead_{lead_time}.h5"
-
-    model_checkpoint = ModelCheckpoint(model_filename, save_best_only=True, monitor='val_loss')
     early_stopping = EarlyStoppingAfterThreshold(threshold=threshold, monitor='val_loss', patience=25)
     print_every_n_callback = PrintEveryNCallback(50) # print every 50 epochs
 
@@ -155,9 +173,46 @@ def main(var_num, lead_time, threshold = 2, train_patches = False,  initial_lear
     epochs=epochs,
     batch_size=batch_size,
     validation_split=0.25,
-    callbacks = [csv_logger, model_checkpoint, early_stopping, print_every_n_callback],  # add early stopping to callbacks
+    callbacks = [csv_logger, early_stopping, print_every_n_callback],  # Removed model_checkpoint from callbacks
     verbose = 0
 )
+       
+    # Prediction part:
+    
+    # load land_sea_mask
+    land_sea_mask_dummy = np.load(
+        "/Data/Delong_BA_Data/land_sea_mask_dummy/land_sea_mask_dummy.npy"
+    )
+    land_sea_mask_dummy = pad_land_sea_mask(land_sea_mask_dummy)
+    land_sea_mask_dummy = np.repeat(land_sea_mask_dummy[np.newaxis, ...], 357, axis=0)
+    # load data
+    test_var_mean = []
+    test_var_std = []
+    test_var_y = []
+    for var in range(6):
+        (
+            padded_test_data_mean,
+            padded_test_data_std,
+            padded_test_data_y,
+        ) = u_net_load_test_data(var, lead_time)
+        test_var_mean.append(padded_test_data_mean)
+        test_var_std.append(padded_test_data_std)
+        test_var_y.append(padded_test_data_y)
+
+    # Then, pack all of your input data into a list
+    test_inputs = test_var_mean + test_var_std + [land_sea_mask_dummy]
+
+    test_target = test_var_y[var_num]
+    
+    predictions = model.predict(test_inputs, verbose=0)
+        
+    predictions_unpad = unpad_images(predictions)
+    
+    path = '/Data/Delong_BA_Data/preds/U_net_5/'
+    
+    np.save(f'{path}U_net_{num_name}_var_{var_num}_lead_{lead_time}_preds.npy', predictions_unpad)
+        
+        
     tf.keras.backend.clear_session()
     
 if __name__ == "__main__":

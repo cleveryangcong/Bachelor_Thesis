@@ -95,7 +95,7 @@ def main(var_num, lead_time, num_name):
         
     predictions_unpad = unpad_images(predictions)
     
-    path = '/Data/Delong_BA_Data/preds/U_net/'
+    path = '/Data/Delong_BA_Data/preds/U_net_5/'
     
     np.save(f'{path}U_net_{num_name}_var_{var_num}_lead_{lead_time}_preds.npy', predictions_unpad)
     
