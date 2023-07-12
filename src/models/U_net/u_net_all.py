@@ -90,29 +90,29 @@ class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
             "decay_steps": self.decay_steps,
         }
     
-    def unpad_images(images, original_shape=(120, 130)):
-        # Calculate padding for height and width
-        pad_height = (images.shape[1] - original_shape[0]) // 2
-        pad_width = (images.shape[2] - original_shape[1]) // 2
+def unpad_images(images, original_shape=(120, 130)):
+    # Calculate padding for height and width
+    pad_height = (images.shape[1] - original_shape[0]) // 2
+    pad_width = (images.shape[2] - original_shape[1]) // 2
 
-        unpadded_images = images[
-            :, pad_height : -pad_height or None, pad_width : -pad_width or None, :
-        ]
-        return unpadded_images
+    unpadded_images = images[
+        :, pad_height : -pad_height or None, pad_width : -pad_width or None, :
+    ]
+    return unpadded_images
 
 
-    def unpad_images_y(images, original_shape=(120, 130)):
-        # Calculate padding for height and width
-        pad_height_t = (images.shape[1] - original_shape[0]) // 2
-        pad_height_b = images.shape[1] - pad_height_t - original_shape[0]
+def unpad_images_y(images, original_shape=(120, 130)):
+    # Calculate padding for height and width
+    pad_height_t = (images.shape[1] - original_shape[0]) // 2
+    pad_height_b = images.shape[1] - pad_height_t - original_shape[0]
 
-        pad_width_l = (images.shape[2] - original_shape[1]) // 2
-        pad_width_r = images.shape[2] - pad_width_l - original_shape[1]
+    pad_width_l = (images.shape[2] - original_shape[1]) // 2
+    pad_width_r = images.shape[2] - pad_width_l - original_shape[1]
 
-        unpadded_images = images[
-            :, pad_height_t : -pad_height_b or None, pad_width_l : -pad_width_r or None
-        ]
-        return unpadded_images
+    unpadded_images = images[
+        :, pad_height_t : -pad_height_b or None, pad_width_l : -pad_width_r or None
+    ]
+    return unpadded_images
 
 def main(var_num, lead_time, threshold = 2, train_patches = False,  initial_learning_rate= 0.01, decay_to_learning_rate = 0.01, epochs = 150, batch_size = 64, filters = 16, num_name = 0):
     
@@ -233,7 +233,7 @@ if __name__ == "__main__":
     elif var_num == 5:
         CRPS_baseline_scores = crps_load_lead_lat_lon("ws10")
     
-    for num_name in [3,4]:
+    for num_name in [1,2]:
         for lead_time in range(31):
             print(f'Begin training lead_time {lead_time}')
             main(var_num, lead_time, threshold = (CRPS_baseline_scores[lead_time].mean()), train_patches = train_patches, initial_learning_rate = initial_learning_rate, decay_to_learning_rate = decay_to_learning_rate, epochs = epochs, batch_size = batch_size, filters= filters, num_name = num_name)
