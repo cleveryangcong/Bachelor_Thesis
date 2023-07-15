@@ -30,6 +30,7 @@ from src.models.U_net.unet import Unet
 from src.models.U_net.u_net_tests_params import *
 from src.models.U_net.unet import *
 from src.models.U_net.u_net_train import *
+from src.models.U_net.u_net_load_preds import *
 
 
 def unpad_images(images, original_shape=(120, 130)):
@@ -73,7 +74,7 @@ def main(var_num, lead_time):
     test_target = test_var_y[var_num]
     test_target_unpad = unpad_images_y(test_target) 
     
-    predictions_unpad = np.load(f'/Data/Delong_BA_Data/preds/U_net_5/U_net_all_var_{var_num}_lead_{lead_time}_preds.npy')
+    predictions_unpad = u_net_load_preds_mean("t2m")[lead_time]
     if var_num in [5]:
         crps = crps_trunc
     else:
@@ -86,8 +87,8 @@ def main(var_num, lead_time):
 )
         
     scores = scores.reshape((357, 120, 130)).mean(axis=0)
-    path_scores ="/Data/Delong_BA_Data/scores/U_net_5/"
-    np.save(f'{path_scores}U_net_all_var_{var_num}_lead_{lead_time}_scores.npy', scores)
+    path_scores ="/Data/Delong_BA_Data/scores/U_net_5_mean/"
+    np.save(f'{path_scores}U_net_mean_var_{var_num}_lead_{lead_time}_scores.npy', scores)
     
     
 if __name__ == "__main__":
