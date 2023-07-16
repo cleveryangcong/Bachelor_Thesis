@@ -123,7 +123,7 @@ def permutation_feature_importance(var_num, lead_time, variable):
 if __name__ == "__main__":
     # Call the main function
     
-    var_num = 2
+    var_num = 5
     lead_time = 11
     
     # Create a pool of worker processes
