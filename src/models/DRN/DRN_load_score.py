@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import fnmatch
+import pickle
 
 def DRN_load_score(var_name):
     '''
@@ -39,4 +40,29 @@ def DRN_load_score_ws10():
     '''
     Function to load ws10 DRN scores
     '''
-    return DRN_load_score('ws10')                                  
+    return DRN_load_score('ws10')           
+
+def DRN_load_hyper_score(var_name):
+    '''
+    Loads all hyper scores and params of a given variable
+    '''
+
+    path = "/Data/Delong_BA_Data/scores/DRN_hyper_scores/"
+    # Create the file pattern based on the variable name
+    file_pattern = f'DRN_hyper_{var_name}_*_*_run*.pkl'
+
+    # List all files in the directory
+    files = os.listdir(path)
+
+    # Filter the list to only include .pkl files that match the file pattern
+    pkl_files = [file for file in files if fnmatch.fnmatch(file, file_pattern)]
+
+    # Sort the file list based on the lead time
+    pkl_files.sort(key=lambda file: int(file.split('_')[3]))
+
+    arrays = []
+    for file in pkl_files:
+        with open(os.path.join(path, file), 'rb') as f:
+            arrays.append(pickle.load(f))
+
+    return arrays

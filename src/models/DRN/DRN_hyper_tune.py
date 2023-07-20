@@ -2,11 +2,14 @@
 import numpy as np
 import argparse
 import multiprocessing as mp
+from itertools import product
+import pickle
+import pandas as pd
 
 # Tensorflow and Keras
 import keras.backend as K
 import tensorflow as tf
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import Callback, EarlyStopping, ModelCheckpoint
 
 # Xarray
 import xarray as xr
@@ -30,9 +33,20 @@ import data.processed.load_data_processed as ldp  # Load processed data normed
 import data.processed.load_data_processed_denormed as ldpd  # Load processed data denormed
 from src.models.CRPS_baseline.CRPS_load import *  # Load CRPS scores
 
+class BestScoreCallback(Callback):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.best_score = float("inf")  # Initialize the best score as infinity
 
+    def on_epoch_end(self, epoch, logs=None):
+        current_val_loss = logs.get("val_loss")
+        if np.less(current_val_loss, self.best_score):
+            self.best_score = current_val_loss  # Update the best score
+            
+    def get_best_score(self):
+        return self.best_score
 
-def DRN_train(
+def DRN_train_hyper(
     var_num,
     lead_time,
     hidden_layer=[],
@@ -108,6 +122,7 @@ def DRN_train(
     # Reshape target values into a 1D array
     t2m_y_val = dat_y_val_lead_all_denorm[var_num][lead_time].values.flatten()
 
+
     # Build the DRN model with embedding
     drn_lead_model = build_emb_model(
         12,
@@ -124,9 +139,10 @@ def DRN_train(
 
     # Define callbacks for early stopping
     early_stopping = EarlyStopping(
-        monitor="val_loss", patience=3
+        monitor="val_loss", patience=2
     )
-    callbacks = [early_stopping]
+    best_score_callback = BestScoreCallback()
+    callbacks = [early_stopping, best_score_callback]
 
     # Check if model saving is requested
     if save:
@@ -149,79 +165,61 @@ def DRN_train(
         batch_size=batch_size,
         validation_data = ([drn_X_val_lead_array, drn_embedding_val_lead_array], t2m_y_val),
         callbacks=callbacks,
-        verbose=0,)
-    return drn_lead_model
-    
-def main(
-    var_num,
-    lead_time,
-    hidden_layer=[],
-    emb_size=3,
-    max_id=15599,
-    batch_size=8192,
-    epochs=10,
-    lr=0.01,
-    validation_split=0.2,
-    optimizer="Adam",
-    activation="relu",
-    save=True,
-):
-    # Run training algorithm
-    DRN_train(
-        var_num,
-        lead_time,
-        hidden_layer=hidden_layer,
-        emb_size=emb_size,
-        max_id=max_id,
-        batch_size=batch_size,
-        epochs=epochs,
-        lr=lr,
-        validation_split=validation_split,
-        optimizer=optimizer,
-        activation=activation,
-        save=save,
+        verbose=0,
+        shuffle = False
     )
     
+    return best_score_callback.get_best_score()
+
 if __name__ == "__main__":
-# Create the parser
-    parser = argparse.ArgumentParser(description="Calculate CRPS for a given variable (DRN)")
-
-    # Add the arguments
-    parser.add_argument('var_num', type=int, help='Variable number between 0 and 5')
-    parser.add_argument('--emb_size', type=int, default=3, help='Embedding size (default: 3)')
-    # Continue adding the arguments
-    parser.add_argument('--max_id', type=int, default=15599, help='Maximum id number (default: 15599)')
-    parser.add_argument('--activation', type=str, default='relu', help='Activation function to use (default: relu)')
-    parser.add_argument('--save', action='store_false', help='Option to not save the model (default: model will be saved)')
-    parser.add_argument('--hidden_layer', type=str, default="", help='Define hidden layer sizes as comma-separated integers (e.g., "64,128,64"). Default is an empty list.')
-
-    parser.add_argument('--batch_size', type=int, default=4096, help='batch size to use (default: 4096)')
-    parser.add_argument('--epochs', type=int, default=10, help='Number of epochs (default: 10)')
-    parser.add_argument('--lr', type=float, default=0.001, help='learning rate (default: 0.001)')
-    parser.add_argument('--validation_split', type=float, default=0.2, help='validation split(default: 0.2)')
-    parser.add_argument('--optimizer', type=str, default="Adam", help='Optimizer to use(default: Adam)')
-    # Parse the arguments
-    args = parser.parse_args()
-
     # Create a pool of worker processes
-    pool = mp.Pool(16)
+    pool = mp.Pool(10)
 
-    # Create a list to store the results
-    results = []
+    var_num = 5
+    hidden_layers = [[512]]
+    emb_size = [5]
+    epochs = [70]
+    batch_sizes = [8192, 16384, 32768]
+    lrs = [0.001, 0.0005, 0.0001, 0.00005, 0.00001]
+    optimizers = ['Adam']
+    activation = ['relu']
+    run = 2 #Always change this
+    
+    # Combine the hyperparameters using itertools.product
+    combinations = list(product(hidden_layers, emb_size, batch_sizes, epochs, lrs, optimizers, activation))
 
-    # Call the main function for each lead_time
-    for lead_time in range(31):
-        hidden_layer = list(map(int, args.hidden_layer.split(","))) if args.hidden_layer else []
-        result = pool.apply_async(main, args=(args.var_num, lead_time, hidden_layer, args.emb_size, args.max_id, args.batch_size, args.epochs, args.lr, args.validation_split, args.optimizer, args.activation, args.save))
+    # Create a DataFrame to store results
+    result_df = pd.DataFrame(columns=['lead_time', 'hidden_layer', 'emb_size', 'batch_size', 'epochs', 'lr', 'optimizer', 'activation', 'score'])
+
+    async_results = []
+    for lead_time in [0, 15, 30]:
+        for params in combinations:
+            async_result = pool.apply_async(DRN_train_hyper, args=(var_num, lead_time, params[0], params[1], 15599, params[2], params[3], params[4],0.2,  params[5], params[6], False))
+            async_results.append((lead_time, params, async_result))
+
+
+    # Wait for all processes to finish and collect results
+    for lead_time, params, async_result in async_results:
+        score = async_result.get()
+        result_df = result_df.append({
+            'lead_time': lead_time,
+            'hidden_layer': params[0], 
+            'emb_size': params[1], 
+            'batch_size': params[2], 
+            'epochs': params[3], 
+            'lr': params[4], 
+            'optimizer': params[5], 
+            'activation': params[6], 
+            'score': score}, ignore_index=True)
+
+    # Save the DataFrame to a CSV file
+    result_df.to_csv(f'/Data/Delong_BA_Data/scores/DRN_hyper_scores/DRN_hyper_scores_dataframe_{var_num}_run_{run}.csv', index=False)
 
     # Close the pool of worker processes
     pool.close()
-    
-    # Call get() on each result to raise any exceptions
-    for result in results:
-        result.get()
-    
-    # Wait for all processes to finish
     pool.join()
-    
-    
+
+
+
+
+
