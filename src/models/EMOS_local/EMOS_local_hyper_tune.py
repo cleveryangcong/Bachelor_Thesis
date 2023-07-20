@@ -1,11 +1,14 @@
 '''
-Train EMOS local for one variable for all lead_times of that variable
+Hypertune EMOS local for one variable for all lead_times of that variable
 '''
 
 # Basics
 import numpy as np
 import argparse
 import multiprocessing as mp
+from itertools import product
+import pickle
+
 
 # TensorFlow and Keras
 import keras.backend as K
@@ -41,12 +44,15 @@ class BestScoreCallback(Callback):
         if np.less(current_val_loss, self.best_score):
             self.best_score = current_val_loss  # Update the best score
 
-    def on_train_end(self, logs=None):
-        print(f"Best validation score = {self.best_score}")
+#     def on_train_end(self, logs=None):
+#         print(f"Best validation score = {self.best_score}")
+        
+    def get_best_score(self):
+        return self.best_score
 
         
 
-def EMOS_local_train(var_num, lead_time, batch_size=32, epochs=30, lr=0.01, validation_split=0.2, optimizer="Adam", save=True):
+def EMOS_local_train_hyper(var_num, lead_time, batch_size=4096, epochs=10, lr=0.001, validation_split=0.2, optimizer="Adam", save=True):
     """
     Train a local EMOS model for a specific variable and lead time for all individual grid points.
 
@@ -72,28 +78,21 @@ def EMOS_local_train(var_num, lead_time, batch_size=32, epochs=30, lr=0.01, vali
     # Define the names of the variables
     var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
 
-    # Load the training and validation data
-    train_all_denormed, val_all_denormed = ldpd.load_data_all_train_val_proc_denorm()
-    train_var_denormed = train_all_denormed[var_num]
-    val_var_denormed = val_all_denormed[var_num]
+    # Load the training data for gridpoint
+    train_var_denormed = ldpd.load_data_all_train_proc_denorm()[var_num]
+    
+    # Best scores over all lat - lon
+    best_scores = []
 
     # Split the data into features and target
-    for lat in range(120):
-        for lon in range(130):
-            # Split the train data into features and target
+    for lat in range(0,120, 10):
+        for lon in range(0, 130, 10):
+            # Split the data into features and target
             X_train_var_denormed = train_var_denormed[
                 list(train_var_denormed.data_vars.keys())[0]
             ].isel(lead_time=lead_time, lat=lat, lon=lon)
             y_train_var_denormed = train_var_denormed[
                 list(train_var_denormed.data_vars.keys())[1]
-            ].isel(lead_time=lead_time, lat=lat, lon=lon)
-            
-            # Split the val data into features and target
-            X_val_var_denormed = val_var_denormed[
-                list(val_var_denormed.data_vars.keys())[0]
-            ].isel(lead_time=lead_time, lat=lat, lon=lon)
-            y_val_var_denormed = val_var_denormed[
-                list(val_var_denormed.data_vars.keys())[1]
             ].isel(lead_time=lead_time, lat=lat, lon=lon)
 
             # Build and compile the model
@@ -123,65 +122,62 @@ def EMOS_local_train(var_num, lead_time, batch_size=32, epochs=30, lr=0.01, vali
                 y_train_var_denormed.values.flatten(),
                 batch_size=batch_size,
                 epochs=epochs,
-                validation_data=([
-                            X_val_var_denormed.isel(mean_std=0).values.flatten(),
-                            X_val_var_denormed.isel(mean_std=1).values.flatten(),
-                        ], y_val_var_denormed.values.flatten()),
+                validation_split=validation_split,
                 callbacks=callbacks,
                 verbose=0
             )
-
-
+            best_scores.append(best_score_callback.get_best_score())
+    return np.mean(best_scores)
             
             
-def main(
-    var_num, lead_time, batch_size=32, epochs=30, lr=0.01, validation_split=0.2, optimizer="Adam"
-):
-    EMOS_local_train(
-        var_num,
-        lead_time,
-        batch_size=batch_size,
-        epochs=epochs,
-        lr=lr,
-        validation_split=validation_split,
-        optimizer=optimizer
-    )
-    
-    
+            
 
+def EMOS_local_hyper_tune(var_num, lead_time, batch_sizes=[4096], epochs=[10], lrs=[0.001], optimizers=["Adam"], validation_split=0.2):
+
+    # Combine the hyperparameters using itertools.product
+    combinations = list(product(batch_sizes, epochs, lrs, optimizers))
+
+    # Initialize variables to store the best score and parameters
+    best_score = float('inf') # It should be positive infinity
+    best_params = None
+    all_scores = []
+    all_params = []
+    
+    for params in tqdm(combinations):
+        score = EMOS_local_train_hyper(var_num, lead_time, batch_size = params[0], epochs = params[1], lr = params[2], optimizer = params[3], save = False)
+        
+        all_scores.append(score)
+        all_params.append(params)
+        # Check if the current score is better than the previous best score
+        if score < best_score: # It should check if the score is lower
+            best_score = score
+            best_params = params
+            
+
+    return best_params, best_score, all_params, all_scores
+
+
+def main():
+    for i in [0, 15, 30]:
+        var_names = ["u10", "v10", "t2m", "t850", "z500", "ws10"]
+        var_num = 5
+        lead_time = i
+        epochs = [30]
+        batch_sizes = [8, 16]
+        lrs = [0.05, 0.01]
+        optimizers = ['Adam']
+        best_params, best_score, all_params, all_scores = EMOS_local_hyper_tune(var_num, lead_time, batch_sizes = batch_sizes, epochs = epochs, lrs = lrs, optimizers = optimizers)
+        best_parms_score = [best_params, best_score, lead_time, all_params, all_scores]
+
+
+        path = f'/Data/Delong_BA_Data/scores/EMOS_local_hyper_scores/EMOS_local_hyper_{var_names[var_num]}_{lead_time}_{best_score}.pkl'
+        with open(path, 'wb') as file:
+            pickle.dump(best_parms_score, file)
+    
 if __name__ == "__main__":
-    # Create the parser
-    parser = argparse.ArgumentParser(description="Calculate CRPS for a given variable")
+    # Call the main function
+    main()
     
-    # Add the arguments
-    parser.add_argument('var_num', type=int, help='Variable number between 0 and 5')
-    parser.add_argument('--batch_size', type=int, default=32, help='batch size to use (default: 32)')
-    parser.add_argument('--epochs', type=int, default=30, help='Number of epochs (default: 30)')
-    parser.add_argument('--lr', type=float, default=0.01, help='learning rate (default: 0.01)')
-    parser.add_argument('--validation_split', type=float, default=0.2, help='validation split(default: 0.2)')
-    parser.add_argument('--optimizer', type=str, default="Adam", help='Optimizer to use(default: Adam)')
-    parser.add_argument('--save', action='store_false', help='Whether to save model or not(default: True)')
-
-    # Parse the arguments
-    args = parser.parse_args()
     
-    # Create a pool of worker processes
-    pool = mp.Pool(16)
-
-    # Create a list to store the results
-    results = []
-
-    # Call the main function for each lead_time
-    for lead_time in range(31):
-        result = pool.apply_async(main, args=(args.var_num, lead_time, args.batch_size, args.epochs, args.lr, args.validation_split, args.optimizer))
-        results.append(result)
     
-    # Close the pool of worker processes
-    pool.close()
     
-    # Call get() on each result to raise any exceptions
-    for result in results:
-        result.get()
-    
-    # Wait for all processes to finish
-    pool.join()
